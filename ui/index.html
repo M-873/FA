@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Daily Video Automation Studio</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Modern clean system fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ==============================================================================
+       SIDEBAR NAVIGATION
+       ============================================================================== -->
+  <aside id="sidebar">
+    <div class="brand-header">
+      <div class="brand-logo">🎬</div>
+      <div>
+        <div class="brand-name">AI Cartoon Studio</div>
+        <div class="brand-tag">Daily 2D Video Automation</div>
+      </div>
+    </div>
+
+    <!-- Navigation List -->
+    <ul class="nav-list" id="sidebar-nav">
+      <li class="nav-item active" data-page="dashboard">
+        <span class="nav-icon">🏠</span> <span>Dashboard</span>
+      </li>
+      <li class="nav-item" data-page="todays-video">
+        <span class="nav-icon">🎬</span> <span>Today's Video</span>
+      </li>
+      <li class="nav-item" data-page="jobs">
+        <span class="nav-icon">📋</span> <span>Jobs</span>
+      </li>
+      <li class="nav-item" data-page="analytics">
+        <span class="nav-icon">📊</span> <span>Analytics</span>
+      </li>
+      <li class="nav-item" data-page="youtube">
+        <span class="nav-icon">📺</span> <span>YouTube</span>
+      </li>
+      <li class="nav-item" data-page="facebook">
+        <span class="nav-icon">📘</span> <span>Facebook</span>
+      </li>
+      <li class="nav-item" data-page="settings">
+        <span class="nav-icon">⚙</span> <span>Settings</span>
+      </li>
+      <li class="nav-item" data-page="device">
+        <span class="nav-icon">🖥</span> <span>Device</span>
+      </li>
+    </ul>
+
+    <!-- Sidebar Bottom Telemetry -->
+    <div class="sidebar-footer">
+      <div class="system-status-indicator" id="sidebar-status-box">
+        <div class="status-dot-mini success" id="sidebar-status-dot"></div>
+        <span id="sidebar-status-text">System Ready</span>
+      </div>
+      <div class="sidebar-version-text" id="sidebar-version">Version v2.4.0 • Windows x64</div>
+    </div>
+  </aside>
+
+  <!-- ==============================================================================
+       MAIN APPLICATION SHELL
+       ============================================================================== -->
+  <main id="main-content">
+    
+    <!-- Top Action Bar -->
+    <header class="top-bar">
+      <div class="top-bar-left">
+        <div class="page-title" id="current-page-title">Dashboard</div>
+        <div class="page-subtitle" id="current-page-subtitle">Daily Automation Overview & Platform Telemetry</div>
+      </div>
+
+      <!-- Quick Prototype State Switcher & Tools -->
+      <div class="top-bar-actions">
+        <!-- Live Prototype State Demo Switcher -->
+        <div class="state-demo-selector">
+          <label class="state-select-label">UI State:</label>
+          <select id="ui-state-switcher" class="form-control select-xs">
+            <option value="SUCCESS" selected>● Success (Completed)</option>
+            <option value="RUNNING">🟡 Running (In-Progress)</option>
+            <option value="READY">○ Ready (Pending)</option>
+            <option value="FAILED">✕ Failed (Error State)</option>
+            <option value="DISCONNECTED">⚪ Disconnected</option>
+          </select>
+        </div>
+
+        <button class="btn btn-secondary btn-sm" onclick="openLogsModal()" title="View Application Logs">
+          📜 Logs
+        </button>
+
+        <button class="btn btn-secondary btn-sm" onclick="openOnboardingModal()" title="Launch Setup Onboarding Wizard">
+          🚀 Onboarding
+        </button>
+
+        <button class="theme-toggle-btn" id="theme-toggle-btn" title="Toggle Light / Dark Theme">
+          ☀️ Light
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Dynamic Pages Container -->
+    <div class="page-container">
+
+      <!-- ==========================================================================
+           1. DASHBOARD PAGE (PHASE 1 DASHBOARD)
+           ========================================================================== -->
+      <section id="page-dashboard" class="page-view active">
+        
+        <!-- Welcome Header Banner -->
+        <div class="welcome-banner">
+          <div>
+            <h1 class="welcome-title">AutoPost & Reels Studio 👋</h1>
+            <p class="welcome-sub">Automated AI Image Posting & Video-to-Reels Creation • Phase 1 Dashboard</p>
+          </div>
+          <div class="next-schedule-tag">
+            <span>🔒 Phase 1 UI Mock Mode (Zero Local Models • Zero Cloud Calls)</span>
+          </div>
+        </div>
+
+        <!-- SECTION A: Daily Auto Post Card -->
+        <div class="card" style="margin-bottom: 20px;">
+          <div class="card-title-bar">
+            <div>
+              <div class="card-title-text" style="font-size: 16px; color: var(--accent-cyan);">
+                📅 Daily Auto Post
+              </div>
+              <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px; max-width: 750px;">
+                Automatically discover trending topics, generate one original image per day, prepare captions and hashtags, and publish to supported platforms.
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span class="badge badge-neutral" id="web-dap-status-badge">○ OFF</span>
+              <label class="switch" title="Toggle Daily Auto Post">
+                <input type="checkbox" id="web-dap-toggle" onchange="handleWebDapToggle(this.checked)">
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Telemetry Grid -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; background: var(--bg-card-inner); padding: 14px 18px; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-top: 12px;">
+            <div>
+              <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">LAST RUN TIME</div>
+              <div id="web-dap-last-run" style="font-size: 14px; font-weight: 600; color: var(--text-primary); margin-top: 4px;">Yesterday, 09:30 AM (Demo)</div>
+            </div>
+            <div>
+              <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">NEXT SCHEDULED RUN</div>
+              <div id="web-dap-next-run" style="font-size: 14px; font-weight: 600; color: #60A5FA; margin-top: 4px;">Tomorrow, 09:00 AM (Scheduled)</div>
+            </div>
+            <div>
+              <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">TODAY'S PROGRESS</div>
+              <div id="web-dap-progress" style="font-size: 14px; font-weight: 600; color: var(--status-success); margin-top: 4px;">Idle (0/1 image) [MOCK]</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION B: Link to Reels Card -->
+        <div class="card" style="margin-bottom: 20px;">
+          <div class="card-title-bar">
+            <div>
+              <div class="card-title-text" style="font-size: 16px; color: #A855F7;">
+                🎬 Link to Reels
+              </div>
+              <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px; max-width: 750px;">
+                Accept a video link, analyze the source, select suitable highlights, create vertical Reels, and publish to connected platforms.
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span class="badge badge-neutral" id="web-ltr-status-badge">○ OFF</span>
+              <label class="switch" title="Toggle Link to Reels">
+                <input type="checkbox" id="web-ltr-toggle" onchange="handleWebLtrToggle(this.checked)">
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Video URL Input Row -->
+          <div style="margin-top: 14px;">
+            <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-primary);">
+              Source Video URL:
+            </label>
+            <div style="display: flex; gap: 10px;">
+              <input type="text" id="web-reels-url-input" class="form-control" placeholder="https://www.youtube.com/watch?v=..." style="flex: 1;">
+              <button class="btn btn-primary" onclick="handleWebAddReelsLink()">➕ Add Link</button>
+            </div>
+            <div id="web-reels-validation-msg" style="font-size: 12px; margin-top: 6px; color: var(--text-muted);">
+              Enter a valid video URL (e.g. YouTube, Vimeo) to queue a mock highlight job.
+            </div>
+          </div>
+
+          <!-- Reels Job Queue -->
+          <div style="margin-top: 18px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <div style="font-size: 13px; font-weight: 700; color: var(--text-primary);">
+                Reels Job Queue (Mock Simulation):
+              </div>
+              <div style="display: flex; gap: 6px;">
+                <button class="btn btn-sm btn-secondary active-filter" onclick="filterWebJobs('ALL', this)">ALL</button>
+                <button class="btn btn-sm btn-secondary" onclick="filterWebJobs('QUEUED', this)">QUEUED</button>
+                <button class="btn btn-sm btn-secondary" onclick="filterWebJobs('PROCESSING', this)">PROCESSING</button>
+                <button class="btn btn-sm btn-secondary" onclick="filterWebJobs('COMPLETED', this)">COMPLETED</button>
+                <button class="btn btn-sm btn-secondary" onclick="filterWebJobs('FAILED', this)">FAILED</button>
+              </div>
+            </div>
+            <div id="web-reels-jobs-list" style="display: flex; flex-direction: column; gap: 8px;">
+              <!-- Dynamic Job Items rendered by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION C & D: Connected Accounts & Hardware Information Panels -->
+        <div class="grid-2" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-bottom: 20px;">
+          
+          <!-- SECTION C: Connected Accounts Panel -->
+          <div class="card">
+            <div class="card-title-bar">
+              <div>
+                <div class="card-title-text" style="font-size: 15px;">🔗 Connected Accounts</div>
+                <div style="font-size: 12px; color: var(--text-secondary);">Platform connection status (Phase 1 Placeholder)</div>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-card-inner); padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                <span style="font-weight: 600;">▶️ YouTube</span>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span class="badge badge-neutral">Not Connected</span>
+                  <button class="btn btn-sm btn-secondary" onclick="alert('Phase 1 UI Placeholder: OAuth 2.0 connection not implemented yet.')" style="opacity: 0.75;">Connect</button>
+                </div>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-card-inner); padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                <span style="font-weight: 600;">📘 Facebook</span>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span class="badge badge-neutral">Not Connected</span>
+                  <button class="btn btn-sm btn-secondary" onclick="alert('Phase 1 UI Placeholder: OAuth 2.0 connection not implemented yet.')" style="opacity: 0.75;">Connect</button>
+                </div>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-card-inner); padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                <span style="font-weight: 600;">📷 Instagram</span>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span class="badge badge-neutral">Not Connected</span>
+                  <button class="btn btn-sm btn-secondary" onclick="alert('Phase 1 UI Placeholder: OAuth 2.0 connection not implemented yet.')" style="opacity: 0.75;">Connect</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION D: Hardware Information Panel -->
+          <div class="card">
+            <div class="card-title-bar">
+              <div>
+                <div class="card-title-text" style="font-size: 15px;">🖥️ Hardware Information</div>
+                <div style="font-size: 12px; color: var(--text-secondary);">Local System Telemetry & Adaptive Profile Selection</div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="badge badge-success" id="web-hw-status-badge">● DETECTED</span>
+                <button class="btn btn-sm btn-secondary" onclick="handleWebRefreshHardware()">🔄 Refresh</button>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 10px; background: var(--bg-card-inner); padding: 12px 16px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); font-size: 13px;">
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-secondary); font-weight: 600;">GPU Name:</span>
+                <span id="web-hw-gpu" style="color: var(--text-primary); font-family: monospace;">NVIDIA GeForce MX110</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-secondary); font-weight: 600;">Dedicated VRAM:</span>
+                <span id="web-hw-vram" style="color: #60A5FA; font-family: monospace;">2048 MB (2.0 GB Dedicated)</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-secondary); font-weight: 600;">System RAM:</span>
+                <span id="web-hw-ram" style="color: var(--text-primary); font-family: monospace;">7.9 GB Total (1.5 GB Available)</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-secondary); font-weight: 600;">CPU Processor:</span>
+                <span id="web-hw-cpu" style="color: var(--text-primary); font-family: monospace;">Intel(R) Core(TM) i5-7200U (4T)</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-secondary); font-weight: 600;">Windows OS:</span>
+                <span id="web-hw-os" style="color: var(--text-muted); font-family: monospace;">Windows 10 Home (Build 19045) 64-bit</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-secondary); font-weight: 600;">Free Disk Space:</span>
+                <span id="web-hw-disk" style="color: var(--status-success); font-family: monospace;">80.7 GB Free (237.7 GB Total)</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-secondary); font-weight: 600;">CUDA / Driver:</span>
+                <span id="web-hw-cuda" style="color: #A78BFA; font-family: monospace;">CUDA Capable (Driver: 531.79)</span>
+              </div>
+            </div>
+
+            <!-- Adaptive Profile Rationale -->
+            <div style="margin-top: 10px; background: #0F172A; padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">ADAPTIVE PROFILE:</span>
+                <span class="badge" id="web-hw-profile-badge" style="background: #374151; color: #E5E7EB; font-weight: 700;">⚡ LEGACY_2GB</span>
+              </div>
+              <div id="web-hw-reason" style="font-size: 12px; color: var(--text-primary); line-height: 1.4;">
+                Target Low-Resource Hardware: NVIDIA GeForce MX110 (2048 MB dedicated VRAM, 7.9 GB system RAM). Classified as LEGACY_2GB. Local Ollama and heavy AI video rendering strictly disabled.
+              </div>
+              <div id="web-hw-timestamp" style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">
+                Detected via local Windows system telemetry.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION E: Activity and Job Status Section -->
+        <div class="card" style="margin-bottom: 20px;">
+          <div class="card-title-bar">
+            <div>
+              <div class="card-title-text" style="font-size: 15px;">📋 Activity and Job Status</div>
+              <div style="font-size: 12px; color: var(--text-secondary);">Recent activity and simple progress indicators</div>
+            </div>
+            <span class="badge badge-warning">⚡ DEMO / MOCK DATA ONLY</span>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px; background: var(--bg-card-inner); padding: 12px 16px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); font-size: 13px;">
+            <div style="display: flex; gap: 12px;">
+              <span style="color: var(--status-success); font-family: monospace; font-weight: 600; min-width: 80px;">● 10:45 AM</span>
+              <span style="color: var(--text-secondary);">[MOCK] Daily Auto Post: Scheduled run registered for tomorrow at 09:00 AM.</span>
+            </div>
+            <div style="display: flex; gap: 12px;">
+              <span style="color: #60A5FA; font-family: monospace; font-weight: 600; min-width: 80px;">● 10:20 AM</span>
+              <span style="color: var(--text-secondary);">[MOCK] Link to Reels: Added new video link to queue (Job #reel_job_103).</span>
+            </div>
+            <div style="display: flex; gap: 12px;">
+              <span style="color: var(--status-warning); font-family: monospace; font-weight: 600; min-width: 80px;">● 09:30 AM</span>
+              <span style="color: var(--text-secondary);">[MOCK] Daily Auto Post: Discovered trending topic 'Future of Clean Robotics'.</span>
+            </div>
+            <div style="display: flex; gap: 12px;">
+              <span style="color: var(--status-success); font-family: monospace; font-weight: 600; min-width: 80px;">● 09:31 AM</span>
+              <span style="color: var(--text-secondary);">[MOCK] Daily Auto Post: Generated 1080x1080 concept image & 5 hashtags.</span>
+            </div>
+            <div style="display: flex; gap: 12px;">
+              <span style="color: #A78BFA; font-family: monospace; font-weight: 600; min-width: 80px;">● Yesterday</span>
+              <span style="color: var(--text-secondary);">[MOCK] Link to Reels: Job #reel_job_101 rendered 9:16 vertical highlight Reel.</span>
+            </div>
+            <div style="display: flex; gap: 12px;">
+              <span style="color: var(--status-danger); font-family: monospace; font-weight: 600; min-width: 80px;">● Yesterday</span>
+              <span style="color: var(--text-secondary);">[MOCK] Link to Reels: Job #reel_job_104 stream timeout simulated (FAILED status demo).</span>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==========================================================================
+           2. TODAY'S VIDEO PAGE
+           ========================================================================== -->
+      <section id="page-todays-video" class="page-view">
+        <div class="grid-2-preview">
+          <!-- Left Column: Video Metadata & Distribution Channels -->
+          <div class="video-meta-col">
+            <div class="card">
+              <div class="card-title-bar">
+                <div class="card-title-text">TODAY'S VIDEO METADATA</div>
+                <span class="badge badge-success" id="tv-status-badge">● Published</span>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">TOPIC & CONCEPT</label>
+                <div class="topic-box" id="tv-topic-text">"AI is changing how programmers work"</div>
+              </div>
+
+              <div class="grid-3" style="margin-bottom: 18px;">
+                <div class="meta-stat-box">
+                  <div class="meta-stat-label">DURATION</div>
+                  <div class="meta-stat-val" id="tv-duration-val">12 sec</div>
+                </div>
+                <div class="meta-stat-box">
+                  <div class="meta-stat-label">RESOLUTION</div>
+                  <div class="meta-stat-val" id="tv-res-val">720 × 1280</div>
+                </div>
+                <div class="meta-stat-box">
+                  <div class="meta-stat-label">ASPECT RATIO</div>
+                  <div class="meta-stat-val">9:16 (Vertical)</div>
+                </div>
+              </div>
+
+              <div class="card-title-text" style="font-size: 12px; margin-bottom: 12px;">MULTI-PLATFORM PUBLISHING STATUS</div>
+              
+              <div class="platform-status-list">
+                <div class="platform-row">
+                  <div class="platform-info">
+                    <span class="p-icon">📘</span>
+                    <div>
+                      <div class="p-title">Facebook Reel</div>
+                      <div class="p-sub">Target: Page (61593188125705)</div>
+                    </div>
+                  </div>
+                  <span class="badge badge-success" id="tv-fb-reel-status">✓ Published</span>
+                </div>
+
+                <div class="platform-row">
+                  <div class="platform-info">
+                    <span class="p-icon">📺</span>
+                    <div>
+                      <div class="p-title">YouTube Shorts</div>
+                      <div class="p-sub">Target: @Life-X-873</div>
+                    </div>
+                  </div>
+                  <span class="badge badge-success" id="tv-yt-shorts-status">✓ Published</span>
+                </div>
+
+                <div class="platform-row">
+                  <div class="platform-info">
+                    <span class="p-icon">📸</span>
+                    <div>
+                      <div class="p-title">Facebook Story</div>
+                      <div class="p-sub">Meta Graph Page Stories</div>
+                    </div>
+                  </div>
+                  <span class="badge badge-warning" id="tv-fb-story-status">⚠ Not Available</span>
+                </div>
+              </div>
+
+              <div class="single-render-guarantee-note">
+                🔒 <b>Single Render Architecture</b>: Both Facebook and YouTube receive the exact same master MP4 (<code>output/final.mp4</code>).
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: 9:16 Video Preview Canvas -->
+          <div class="video-canvas-col">
+            <div class="card preview-card">
+              <div class="card-title-bar" style="margin-bottom: 10px;">
+                <div class="card-title-text">MASTER VIDEO PREVIEW (9:16)</div>
+                <span class="badge badge-neutral" id="preview-aspect-tag">720x1280 • 24fps</span>
+              </div>
+
+              <!-- 9:16 Vertical Video Frame -->
+              <div class="video-frame-container">
+                <div class="video-screen" id="mock-video-screen">
+                  <!-- Animated 2D Cartoon Visual Placeholder -->
+                  <div class="cartoon-scene-graphic">
+                    <div class="character-pair">
+                      <div class="char-avatar char-cat">🐱</div>
+                      <div class="char-avatar char-bot">🤖</div>
+                    </div>
+                    <div class="speech-bubble">
+                      "Wait, are AI agents taking over my coding job?!"
+                    </div>
+                    <div class="sound-wave-indicator">
+                      <span></span><span></span><span></span><span></span><span></span>
+                    </div>
+                    <div class="viseme-tag">👄 Viseme Lip-Sync Active</div>
+                  </div>
+
+                  <!-- Overlay Title Badge -->
+                  <div class="video-overlay-header">
+                    <div class="video-overlay-title">AI Coding Agents Debate</div>
+                    <div class="video-overlay-meta">12s • 720p</div>
+                  </div>
+                </div>
+
+                <!-- Custom Player Controls Bar -->
+                <div class="video-player-controls">
+                  <div class="time-scrubber">
+                    <div class="scrubber-progress" id="player-progress-bar" style="width: 45%;"></div>
+                  </div>
+                  <div class="controls-row">
+                    <div class="controls-left">
+                      <button class="v-ctrl-btn" id="player-play-btn" onclick="togglePlayPreview()" title="Play/Pause">▶</button>
+                      <button class="v-ctrl-btn" onclick="restartPreview()" title="Restart">⏮</button>
+                      <span class="time-display" id="player-time-display">00:05 / 00:12</span>
+                    </div>
+                    <div class="controls-right">
+                      <button class="v-ctrl-btn" onclick="toggleMute()" title="Volume">🔊</button>
+                      <button class="v-ctrl-btn" onclick="showToast('Fullscreen Preview', 'info')" title="Fullscreen">⛶</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="preview-footer-stats">
+                <span>File: <code>output/final.mp4</code></span>
+                <span>Size: <b>3.8 MB</b></span>
+                <span>Codec: <b>H.264 / AAC</b></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================================================
+           3. JOBS PAGE
+           ========================================================================== -->
+      <section id="page-jobs" class="page-view">
+        <div class="card">
+          <div class="card-title-bar">
+            <div>
+              <div class="card-title-text">DAILY JOBS LEDGER</div>
+              <div class="card-subtitle-text">History of daily video generations and multi-platform publishing status.</div>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-secondary btn-sm" onclick="showToast('Refreshing job list...', 'info')">🔄 Refresh</button>
+              <button class="btn btn-secondary btn-sm" onclick="showToast('Exporting job ledger JSON...', 'info')">📥 Export</button>
+            </div>
+          </div>
+
+          <div class="info-alert-box">
+            <span>ℹ️</span>
+            <div><b>Single Render Architecture</b>: Each daily job creates exactly one master video file rendered locally and uploads the same file to Facebook Reel and YouTube Shorts.</div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Topic</th>
+                  <th>Status</th>
+                  <th>Facebook Reel</th>
+                  <th>YouTube Shorts</th>
+                  <th>Duration</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="jobs-table-body">
+                <!-- Dynamically Populated via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================================================
+           4. ANALYTICS PAGE
+           ========================================================================== -->
+      <section id="page-analytics" class="page-view">
+        <!-- 4 Metric Cards -->
+        <div class="grid-4" style="margin-bottom: 20px;">
+          <div class="card metric-card">
+            <div class="metric-label">VIDEOS PUBLISHED</div>
+            <div class="metric-value" style="color: var(--accent-cyan);" id="an-val-total">7</div>
+            <div class="metric-trend">Total completed daily videos</div>
+          </div>
+          <div class="card metric-card">
+            <div class="metric-label">THIS WEEK</div>
+            <div class="metric-value" id="an-val-week">7</div>
+            <div class="metric-trend">7 / 7 consecutive days</div>
+          </div>
+          <div class="card metric-card">
+            <div class="metric-label">FACEBOOK SUCCESS</div>
+            <div class="metric-value" style="color: var(--status-success);" id="an-val-fb">7 / 7</div>
+            <div class="metric-trend">100% Reel publishing rate</div>
+          </div>
+          <div class="card metric-card">
+            <div class="metric-label">YOUTUBE SUCCESS</div>
+            <div class="metric-value" style="color: var(--status-success);" id="an-val-yt">7 / 7</div>
+            <div class="metric-trend">100% Shorts publishing rate</div>
+          </div>
+        </div>
+
+        <!-- Publication Frequency & Rate -->
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title-bar">
+              <div class="card-title-text">DAILY VIDEO CADENCE (THIS WEEK)</div>
+              <span class="badge badge-success" id="an-val-rate">100% SUCCESS RATE</span>
+            </div>
+            <div class="card-subtitle-text" style="margin-bottom: 16px;">Daily 1-video automation frequency chart.</div>
+            
+            <div class="lightweight-bar-chart">
+              <div class="bar-col"><div class="bar-fill filled" style="height: 85%;"></div><div class="bar-label">Mon</div></div>
+              <div class="bar-col"><div class="bar-fill filled" style="height: 85%;"></div><div class="bar-label">Tue</div></div>
+              <div class="bar-col"><div class="bar-fill filled" style="height: 85%;"></div><div class="bar-label">Wed</div></div>
+              <div class="bar-col"><div class="bar-fill filled" style="height: 85%;"></div><div class="bar-label">Thu</div></div>
+              <div class="bar-col"><div class="bar-fill filled" style="height: 85%;"></div><div class="bar-label">Fri</div></div>
+              <div class="bar-col"><div class="bar-fill filled" style="height: 85%;"></div><div class="bar-label">Sat</div></div>
+              <div class="bar-col"><div class="bar-fill filled" style="height: 85%;"></div><div class="bar-label">Sun</div></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title-bar">
+              <div class="card-title-text">SYSTEM EFFICIENCY SUMMARY</div>
+              <span class="badge badge-neutral">MX110 Optimized</span>
+            </div>
+            <div class="summary-list">
+              <div class="summary-item">
+                <span class="s-label">Average Render Time:</span>
+                <span class="s-val"><b>42 seconds</b></span>
+              </div>
+              <div class="summary-item">
+                <span class="s-label">Average Video Size:</span>
+                <span class="s-val"><b>3.6 MB</b></span>
+              </div>
+              <div class="summary-item">
+                <span class="s-label">Peak VRAM Usage:</span>
+                <span class="s-val"><b>1.1 GB / 2.0 GB</b></span>
+              </div>
+              <div class="summary-item">
+                <span class="s-label">Zero Database Footprint:</span>
+                <span class="s-val" style="color: var(--status-success);">Active (Stateless JSON)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================================================
+           5. YOUTUBE PAGE
+           ========================================================================== -->
+      <section id="page-youtube" class="page-view">
+        <div class="grid-2">
+          <!-- Connection & Account Card -->
+          <div class="card">
+            <div class="card-title-bar">
+              <div class="card-title-text">YOUTUBE CONNECTION</div>
+              <span class="badge badge-success" id="yt-status-badge">● Connected</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">CHANNEL NAME</label>
+              <div class="connected-acc-title" id="yt-channel-name">My AI Cartoon Channel</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">CHANNEL HANDLE</label>
+              <div class="connected-acc-sub" id="yt-channel-handle">@Life-X-873</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">OAUTH 2.0 TOKEN STATUS</label>
+              <div class="masked-key-display">
+                <span class="masked-dots">••••••••••••••••••••••••••••••••</span>
+                <span class="badge badge-success">Valid & Active</span>
+              </div>
+            </div>
+
+            <div class="btn-group-row">
+              <button class="btn btn-secondary" onclick="showToast('Re-authenticating with Google OAuth...', 'info')">
+                🔄 RECONNECT YOUTUBE
+              </button>
+              <button class="btn btn-danger" onclick="showToast('YouTube disconnected.', 'warning')">
+                DISCONNECT
+              </button>
+            </div>
+          </div>
+
+          <!-- Publishing Settings Card -->
+          <div class="card">
+            <div class="card-title-bar">
+              <div class="card-title-text">PUBLISHING SETTINGS</div>
+              <span class="badge badge-neutral">Auto-Publish ON</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">DEFAULT PRIVACY</label>
+              <select class="form-control">
+                <option selected>Public</option>
+                <option>Unlisted</option>
+                <option>Private</option>
+              </select>
+            </div>
+
+            <div class="toggle-switch">
+              <div>
+                <div class="switch-label">Auto Publish</div>
+                <div class="switch-sub">Upload directly to YouTube Shorts on render completion</div>
+              </div>
+              <input type="checkbox" checked>
+            </div>
+
+            <div class="form-group" style="margin-top: 16px;">
+              <label class="form-label">UPLOAD FORMAT</label>
+              <input type="text" class="form-control" value="YouTube Shorts (#Shorts vertical)" readonly>
+            </div>
+
+            <!-- Latest Upload Card -->
+            <div class="latest-upload-card" id="yt-latest-box">
+              <div class="card-title-text" style="font-size: 11px; margin-bottom: 6px;">LATEST UPLOAD</div>
+              <div class="latest-upload-content">
+                <div class="latest-thumb">🎬</div>
+                <div>
+                  <div class="latest-title" id="yt-latest-title">AI Agents Explained 🤖 #Shorts</div>
+                  <div class="latest-meta" id="yt-latest-meta">Published: 11 Aug 2026 • Status: ✓ Public</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================================================
+           6. FACEBOOK PAGE
+           ========================================================================== -->
+      <section id="page-facebook" class="page-view">
+        <div class="grid-2">
+          <!-- Connection Card -->
+          <div class="card">
+            <div class="card-title-bar">
+              <div class="card-title-text">FACEBOOK CONNECTION</div>
+              <span class="badge badge-success" id="fb-status-badge">● Connected</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">PAGE NAME</label>
+              <div class="connected-acc-title" id="fb-page-name">My AI Cartoon Page</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">PAGE ID</label>
+              <div class="connected-acc-sub" id="fb-page-id">61593188125705</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">PAGE ACCESS TOKEN</label>
+              <div class="masked-key-display">
+                <span class="masked-dots">••••••••••••••••••••••••••••••••</span>
+                <span class="badge badge-success">Valid</span>
+              </div>
+            </div>
+
+            <div class="btn-group-row">
+              <button class="btn btn-secondary" onclick="showToast('Refreshing Meta Graph token...', 'info')">
+                🔄 RECONNECT FACEBOOK
+              </button>
+              <button class="btn btn-danger" onclick="showToast('Facebook disconnected.', 'warning')">
+                DISCONNECT
+              </button>
+            </div>
+          </div>
+
+          <!-- Publishing Channels Card -->
+          <div class="card">
+            <div class="card-title-bar">
+              <div class="card-title-text">PUBLISHING DESTINATIONS</div>
+            </div>
+
+            <div class="toggle-switch">
+              <div>
+                <div class="switch-label">Facebook Reel</div>
+                <div class="switch-sub">Upload 9:16 vertical video reel via Meta Graph API</div>
+              </div>
+              <input type="checkbox" checked>
+            </div>
+
+            <div class="toggle-switch">
+              <div>
+                <div class="switch-label">Facebook Story</div>
+                <div class="switch-sub">Upload temporary 24h Page Story video</div>
+              </div>
+              <input type="checkbox" checked>
+            </div>
+
+            <!-- Official API Limitation Notice (Does not look like application error) -->
+            <div class="warning-banner" id="fb-story-warning">
+              <span class="warning-icon">⚠️</span>
+              <div>
+                <b>Meta API Notice:</b> Facebook Story publishing is currently unavailable through the official Meta Graph API endpoints for Page Stories. 
+                Facebook Reel publishing remains 100% fully active and functional.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================================================
+           7. DEVICE & PERFORMANCE PROFILE PAGE
+           ========================================================================== -->
+      <section id="page-device" class="page-view">
+        <div class="grid-2">
+          <!-- Hardware Specs Card -->
+          <div class="card">
+            <div class="card-title-bar">
+              <div class="card-title-text">DETECTED HOST HARDWARE</div>
+              <span class="badge badge-warning" id="dev-hw-badge">● MX110 2GB</span>
+            </div>
+
+            <div class="device-spec-grid">
+              <div class="spec-item">
+                <div class="spec-label">COMPUTER NAME</div>
+                <div class="spec-val" id="dev-computer">DESKTOP-MX110-DEV</div>
+              </div>
+              <div class="spec-item">
+                <div class="spec-label">OPERATING SYSTEM</div>
+                <div class="spec-val" id="dev-os">Windows 11 Home 64-bit</div>
+              </div>
+              <div class="spec-item">
+                <div class="spec-label">PROCESSOR (CPU)</div>
+                <div class="spec-val" id="dev-cpu">Intel Core i5-7200U @ 2.50GHz</div>
+              </div>
+              <div class="spec-item">
+                <div class="spec-label">SYSTEM MEMORY (RAM)</div>
+                <div class="spec-val" id="dev-ram">8 GB DDR4</div>
+              </div>
+              <div class="spec-item">
+                <div class="spec-label">GRAPHICS CARD (GPU)</div>
+                <div class="spec-val" id="dev-gpu">NVIDIA GeForce MX110</div>
+              </div>
+              <div class="spec-item">
+                <div class="spec-label">VIDEO MEMORY (VRAM)</div>
+                <div class="spec-val" id="dev-vram">2 GB Dedicated GDDR5</div>
+              </div>
+              <div class="spec-item">
+                <div class="spec-label">CUDA SUPPORT</div>
+                <div class="spec-val" id="dev-cuda">Available (CUDA 11.8)</div>
+              </div>
+              <div class="spec-item">
+                <div class="spec-label">DRIVER VERSION</div>
+                <div class="spec-val" id="dev-driver">536.23</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Performance Profile Selector Card -->
+          <div class="card">
+            <div class="card-title-bar">
+              <div class="card-title-text">PERFORMANCE PROFILE</div>
+              <span class="badge badge-warning" id="dev-profile-tag">🟡 LEGACY_LOW</span>
+            </div>
+
+            <div class="profile-explanation-box">
+              <div class="profile-title" id="dev-profile-name">LEGACY_LOW Profile Active</div>
+              <div class="profile-reason" id="dev-profile-reason">
+                "Your system has limited VRAM (2GB) and RAM (8GB), so lightweight rendering and sequential processing are enabled."
+              </div>
+            </div>
+
+            <!-- Profile Cards Matrix -->
+            <div class="profile-matrix">
+              <div class="profile-option-card active" id="prof-card-legacy">
+                <div class="prof-header">
+                  <span class="prof-name">🟡 LEGACY_LOW</span>
+                  <span class="badge badge-warning">CURRENT</span>
+                </div>
+                <div class="prof-desc">720×1280 @ 24fps • Ultrafast • Sequential 1 Job • MX110 2GB</div>
+              </div>
+
+              <div class="profile-option-card" id="prof-card-low">
+                <div class="prof-header">
+                  <span class="prof-name">🟢 LOW</span>
+                </div>
+                <div class="prof-desc">720×1280 @ 24fps • Veryfast • 4GB GPU + 8GB RAM</div>
+              </div>
+
+              <div class="profile-option-card" id="prof-card-balanced">
+                <div class="prof-header">
+                  <span class="prof-name">🔵 BALANCED</span>
+                </div>
+                <div class="prof-desc">1080×1920 @ 30fps • Medium • 6GB GPU + 16GB RAM</div>
+              </div>
+
+              <div class="profile-option-card" id="prof-card-high">
+                <div class="prof-header">
+                  <span class="prof-name">🟣 HIGH</span>
+                </div>
+                <div class="prof-desc">1080×1920 @ 60fps • Slow • 8GB+ GPU + 32GB RAM</div>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 16px;">
+              <label class="form-label">PROFILE SELECTION MODE</label>
+              <div class="radio-group-row">
+                <label><input type="radio" name="profile-mode" value="AUTO" checked> [ AUTO ] Hardware Adaptive</label>
+                <label><input type="radio" name="profile-mode" value="MANUAL"> [ MANUAL ] Override</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================================================
+           8. SETTINGS PAGE
+           ========================================================================== -->
+      <section id="page-settings" class="page-view">
+        <div class="grid-2">
+          <!-- General & Content Settings -->
+          <div class="card">
+            <div class="card-title-text" style="margin-bottom: 14px;">GENERAL & AUTOMATION</div>
+            
+            <div class="toggle-switch">
+              <div>
+                <div class="switch-label">Auto Run on Startup</div>
+                <div class="switch-sub">Start video automation immediately when application launches</div>
+              </div>
+              <input type="checkbox" checked>
+            </div>
+
+            <div class="toggle-switch">
+              <div>
+                <div class="switch-label">Start with Windows</div>
+                <div class="switch-sub">Launch background automation on system boot</div>
+              </div>
+              <input type="checkbox">
+            </div>
+
+            <div class="toggle-switch">
+              <div>
+                <div class="switch-label">Daily Automation Schedule</div>
+                <div class="switch-sub">Generate exactly 1 video per day automatically</div>
+              </div>
+              <input type="checkbox" checked>
+            </div>
+
+            <div class="card-title-text" style="margin-top: 20px; margin-bottom: 14px;">CONTENT & CREATIVE</div>
+
+            <div class="form-group">
+              <label class="form-label">CONTENT NICHE</label>
+              <input type="text" class="form-control" value="AI & Technology">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">PRIMARY LANGUAGE</label>
+              <select class="form-control">
+                <option selected>English</option>
+                <option>Bengali (বাংলা)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">VIDEO DURATION</label>
+              <select class="form-control">
+                <option selected>10–15 sec (Reels/Shorts)</option>
+                <option>15–20 sec</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Character & AI Providers -->
+          <div class="card">
+            <div class="card-title-text" style="margin-bottom: 14px;">CHARACTER & AUDIO STYLES</div>
+
+            <div class="form-group">
+              <label class="form-label">CHARACTER STYLE</label>
+              <input type="text" class="form-control" value="2D Cartoon (Minimal Flat Vector)">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">VOICE STYLE</label>
+              <select class="form-control">
+                <option selected>Friendly (Expressive Duo)</option>
+                <option>Humorous & Sarcastic</option>
+                <option>Informative & Fast-Paced</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">SUBTITLE STYLE</label>
+              <select class="form-control">
+                <option selected>Bold Yellow Shadow (High Contrast)</option>
+                <option>Clean Minimal White</option>
+              </select>
+            </div>
+
+            <div class="card-title-text" style="margin-top: 20px; margin-bottom: 14px;">AI PROVIDER CONNECTIONS (KEYS MASKED)</div>
+
+            <div class="provider-key-row">
+              <div class="p-info">
+                <div class="p-name">Google Gemini 2.5 Flash</div>
+                <div class="p-status" style="color: var(--status-success);">● Connected</div>
+              </div>
+              <div class="p-key-field">
+                <input type="text" class="form-control input-sm" value="●●●●●●●●●●●●●●●●" readonly>
+                <button class="btn btn-secondary btn-sm" onclick="showToast('Change Gemini API Key dialog', 'info')">Change Key</button>
+              </div>
+            </div>
+
+            <div class="provider-key-row">
+              <div class="p-info">
+                <div class="p-name">OpenAI API</div>
+                <div class="p-status" style="color: var(--text-muted);">○ Not Connected</div>
+              </div>
+              <div class="p-key-field">
+                <input type="text" class="form-control input-sm" value="●●●●●●●●●●●●●●●●" readonly>
+                <button class="btn btn-secondary btn-sm" onclick="showToast('Change OpenAI API Key dialog', 'info')">Change Key</button>
+              </div>
+            </div>
+
+            <div class="provider-key-row">
+              <div class="p-info">
+                <div class="p-name">Cloud TTS & Viseme Engine</div>
+                <div class="p-status" style="color: var(--status-success);">● Connected</div>
+              </div>
+              <div class="p-key-field">
+                <input type="text" class="form-control input-sm" value="●●●●●●●●●●●●●●●●" readonly>
+                <button class="btn btn-secondary btn-sm" onclick="showToast('Change TTS Key dialog', 'info')">Change Key</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Live Bottom Status Bar -->
+    <footer class="live-status-bar" id="live-status-bar">
+      <div class="live-status-left">
+        <span class="live-status-dot success" id="bottom-status-dot"></span>
+        <span class="live-status-text" id="bottom-status-text">● System Ready</span>
+        <span class="live-stage-text" id="bottom-stage-text">| Standby</span>
+      </div>
+      <div class="live-status-right">
+        <div class="live-progress-container" id="bottom-progress-box" style="display: none;">
+          <span class="live-progress-label" id="bottom-progress-label">Progress: 62%</span>
+          <div class="live-progress-bar-bg"><div class="live-progress-bar-fill" id="bottom-progress-fill" style="width: 62%;"></div></div>
+        </div>
+        <span class="hardware-pill" id="bottom-hw-pill">⚡ MX110 (LEGACY_LOW)</span>
+      </div>
+    </footer>
+  </main>
+
+  <!-- ==============================================================================
+       MODALS: 1. LOG VIEWER MODAL
+       ============================================================================== -->
+  <div class="modal-overlay" id="logs-modal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header">
+        <div class="modal-title">📜 Real-Time Application Log Viewer</div>
+        <button class="modal-close-btn" onclick="closeLogsModal()">✕</button>
+      </div>
+      <div class="modal-sub">Live automation telemetry • All sensitive credentials & API keys are strictly redacted.</div>
+      
+      <div class="log-console-container" id="log-console-text">
+        <!-- Dynamically rendered via JS -->
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" onclick="copyLogsToClipboard()">📋 Copy Logs</button>
+        <button class="btn btn-secondary btn-sm" onclick="clearLogConsole()">🧹 Clear Logs</button>
+        <button class="btn btn-primary btn-sm" onclick="closeLogsModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==============================================================================
+       MODALS: 2. ONBOARDING SETUP WIZARD (6 STEPS)
+       ============================================================================== -->
+  <div class="modal-overlay" id="onboarding-modal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header">
+        <div class="modal-title">🚀 First Launch Setup Wizard</div>
+        <button class="modal-close-btn" onclick="closeOnboardingModal()">✕</button>
+      </div>
+      <div class="wizard-step-indicators" id="wizard-steps-nav">
+        <span class="wiz-step active" data-step="1">1. Welcome</span>
+        <span class="wiz-step" data-step="2">2. Device</span>
+        <span class="wiz-step" data-step="3">3. Profile</span>
+        <span class="wiz-step" data-step="4">4. Services</span>
+        <span class="wiz-step" data-step="5">5. Config</span>
+        <span class="wiz-step" data-step="6">6. Ready</span>
+      </div>
+
+      <!-- Step 1: Welcome -->
+      <div class="wizard-step-body active" id="wiz-step-1">
+        <div style="font-size: 20px; font-weight: 800; margin-bottom: 8px;">Welcome to AI Cartoon Automation</div>
+        <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
+          This lightweight Windows application automates the creation of <b>ONE high-engagement 10–15s 2D cartoon video per day</b> and publishes the <b>exact same master MP4</b> to Facebook Reel and YouTube Shorts.
+        </p>
+      </div>
+
+      <!-- Step 2: Device Detection -->
+      <div class="wizard-step-body" id="wiz-step-2">
+        <div style="font-size: 16px; font-weight: 700; margin-bottom: 12px;">Step 2: Host Hardware Detection</div>
+        <div class="device-spec-grid">
+          <div class="spec-item"><div class="spec-label">CPU</div><div class="spec-val">Intel Core i5-7200U</div></div>
+          <div class="spec-item"><div class="spec-label">RAM</div><div class="spec-val">8 GB DDR4</div></div>
+          <div class="spec-item"><div class="spec-label">GPU</div><div class="spec-val">NVIDIA GeForce MX110</div></div>
+          <div class="spec-item"><div class="spec-label">VRAM</div><div class="spec-val">2 GB GDDR5</div></div>
+        </div>
+      </div>
+
+      <!-- Step 3: Performance Profile -->
+      <div class="wizard-step-body" id="wiz-step-3">
+        <div style="font-size: 16px; font-weight: 700; margin-bottom: 12px;">Step 3: Performance Profile Selected</div>
+        <div class="profile-explanation-box">
+          <div class="profile-title">🟡 LEGACY_LOW Profile Auto-Assigned</div>
+          <div class="profile-reason">
+            Optimized for low-end hardware (NVIDIA MX110 2GB + 8GB RAM). Generates 720×1280 @ 24fps using ultrafast FFmpeg encoding without overloading your computer.
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Connect Services -->
+      <div class="wizard-step-body" id="wiz-step-4">
+        <div style="font-size: 16px; font-weight: 700; margin-bottom: 12px;">Step 4: Connect Cloud & Social Services</div>
+        <div class="platform-status-list">
+          <div class="platform-row"><span>🤖 Google Gemini AI</span><span class="badge badge-success">● Connected</span></div>
+          <div class="platform-row"><span>📺 YouTube Shorts API</span><span class="badge badge-success">● Connected</span></div>
+          <div class="platform-row"><span>📘 Facebook Reel API</span><span class="badge badge-success">● Connected</span></div>
+          <div class="platform-row"><span>🎙️ Cloud TTS Speech Engine</span><span class="badge badge-success">● Connected</span></div>
+        </div>
+      </div>
+
+      <!-- Step 5: Project Configuration -->
+      <div class="wizard-step-body" id="wiz-step-5">
+        <div style="font-size: 16px; font-weight: 700; margin-bottom: 12px;">Step 5: Project Configuration</div>
+        <div class="grid-2">
+          <div class="form-group"><label class="form-label">NICHE</label><input type="text" class="form-control" value="AI & Technology" readonly></div>
+          <div class="form-group"><label class="form-label">LANGUAGE</label><input type="text" class="form-control" value="English" readonly></div>
+          <div class="form-group"><label class="form-label">CHARACTER STYLE</label><input type="text" class="form-control" value="2D Cartoon Flat Vector" readonly></div>
+          <div class="form-group"><label class="form-label">VOICE</label><input type="text" class="form-control" value="Expressive Duo" readonly></div>
+        </div>
+      </div>
+
+      <!-- Step 6: Ready -->
+      <div class="wizard-step-body" id="wiz-step-6">
+        <div style="font-size: 20px; font-weight: 800; color: var(--status-success); margin-bottom: 8px;">✓ Your automation is ready!</div>
+        <p style="font-size: 13px; color: var(--text-secondary);">
+          Everything is set up. You can now let the system run automatically on schedule or trigger runs manually from the dashboard.
+        </p>
+      </div>
+
+      <!-- Wizard Navigation Footer -->
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" id="wiz-prev-btn" onclick="wizardPrevStep()" style="display: none;">◀ Previous</button>
+        <button class="btn btn-primary btn-sm" id="wiz-next-btn" onclick="wizardNextStep()">Next ▶</button>
+        <button class="btn btn-primary btn-sm" id="wiz-done-btn" onclick="closeOnboardingModal()" style="display: none;">DONE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Root Container -->
+  <div id="toast-container"></div>
+
+  <!-- Modular Frontend Scripts -->
+  <script src="js/mock_data.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

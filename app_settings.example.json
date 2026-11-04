@@ -1,0 +1,63 @@
+{
+  "daily_auto_post": {
+    "enabled": false,
+    "status": "OFF",
+    "last_run": "Yesterday, 09:30 AM (Demo)",
+    "next_run": "Tomorrow, 09:00 AM (Scheduled)",
+    "today_progress": "Idle (0/1 image)"
+  },
+  "link_to_reels": {
+    "enabled": false,
+    "status": "OFF"
+  },
+  "mock_reels_jobs": [
+    {
+      "id": "reel_job_101",
+      "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "status": "COMPLETED",
+      "progress": 100,
+      "created_at": "Today, 10:15 AM",
+      "note": "Mock highlight reel rendered (Demo)"
+    },
+    {
+      "id": "reel_job_102",
+      "url": "https://vimeo.com/76979871",
+      "status": "PROCESSING",
+      "progress": 65,
+      "created_at": "Today, 11:20 AM",
+      "note": "Simulating highlight extraction (Demo)"
+    },
+    {
+      "id": "reel_job_103",
+      "url": "https://www.youtube.com/watch?v=3JZ_D3ELwOQ",
+      "status": "QUEUED",
+      "progress": 0,
+      "created_at": "Today, 11:45 AM",
+      "note": "Waiting in simulated queue"
+    },
+    {
+      "id": "reel_job_104",
+      "url": "https://www.youtube.com/watch?v=2vjPBrBU-TM",
+      "status": "FAILED",
+      "progress": 25,
+      "created_at": "Yesterday, 04:30 PM",
+      "note": "Mock Error: Simulated video stream timeout"
+    }
+  ],
+  "connected_accounts": {
+    "youtube": {
+      "status": "Not Connected",
+      "username": null
+    },
+    "facebook": {
+      "status": "Not Connected",
+      "page_name": null
+    },
+    "instagram": {
+      "status": "Not Connected",
+      "handle": null
+    }
+  },
+  "hardware_report": null
+}
+

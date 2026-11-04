@@ -1,0 +1,25 @@
+{
+  "project_name": "Daily 2D Cartoon AI Shorts",
+  "niche": "AI Tech & Science Humor",
+  "language": "bn",
+  "video_duration": 12,
+  "aspect_ratio": "9:16",
+  "character_style": "minimal_flat_vector",
+  "voice_style": "expressive_bn",
+  "subtitle_style": "yellow_shadow_bold",
+  "music_style": "upbeat_lofi_playful",
+  "facebook_page_url": "https://www.facebook.com/profile.php?id=61593188125705",
+  "facebook_page_id": "61593188125705",
+  "youtube_channel_url": "https://www.youtube.com/@Life-X-873",
+  "youtube_channel_handle": "@Life-X-873",
+  "default_hashtags": [
+    "#AICartoon",
+    "#TechShorts",
+    "#Animation",
+    "#BanglaTech",
+    "#Reels",
+    "#Shorts"
+  ],
+  "auto_run_on_start": true,
+  "start_with_windows": false
+}

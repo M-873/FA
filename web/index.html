@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2D Cartoon Daily Video Automation - Control Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #070B14;
+      --card-bg: rgba(19, 27, 44, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --cyan-glow: #00F2FE;
+      --cyan-hover: #38BDF8;
+      --blue-accent: #3B82F6;
+      --green-success: #10B981;
+      --amber-warning: #F59E0B;
+      --rose-danger: #EF4444;
+      --text-main: #F9FAFB;
+      --text-muted: #9CA3AF;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(0, 242, 254, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(59, 130, 246, 0.08) 0%, transparent 40%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    header {
+      background: rgba(11, 15, 25, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      font-size: 24px;
+      background: linear-gradient(135deg, #00F2FE, #4FACFE);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .brand-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .profile-badge {
+      background: rgba(55, 65, 81, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--cyan-glow);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--green-success);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--green-success);
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px 32px;
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 24px;
+    }
+
+    /* Cards */
+    .glass-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--cyan-glow);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Hardware Telemetry Grid */
+    .telemetry-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: rgba(15, 22, 35, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .stat-lbl {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .stat-val {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .stat-progress {
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+
+    .stat-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--blue-accent), var(--cyan-glow));
+      border-radius: 2px;
+    }
+
+    /* Workflow Timeline */
+    .timeline {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      margin: 24px 0 12px 0;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      top: 14px;
+      left: 10%;
+      right: 10%;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.1);
+      z-index: 1;
+    }
+
+    .step-item {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .step-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #151D2A;
+      border: 2px solid var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      transition: all 0.3s ease;
+    }
+
+    .step-item.active .step-icon {
+      border-color: var(--cyan-glow);
+      background: rgba(0, 242, 254, 0.15);
+      color: var(--cyan-glow);
+      box-shadow: 0 0 12px rgba(0, 242, 254, 0.4);
+    }
+
+    .step-item.completed .step-icon {
+      border-color: var(--green-success);
+      background: var(--green-success);
+      color: #FFF;
+    }
+
+    .step-title {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .step-item.active .step-title {
+      color: var(--cyan-glow);
+      font-weight: 700;
+    }
+
+    /* Social Platforms Cards */
+    .platform-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .platform-row {
+      background: rgba(15, 22, 35, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .platform-name {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .badge-status {
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .badge-pending { background: rgba(245, 158, 11, 0.2); color: var(--amber-warning); }
+    .badge-success { background: rgba(16, 185, 129, 0.2); color: var(--green-success); }
+
+    /* Action Buttons */
+    .btn-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #10B981, #059669);
+      color: #FFF;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(55, 65, 81, 0.8);
+      color: #FFF;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(75, 85, 99, 1);
+    }
+
+    /* Terminal Console */
+    .console-box {
+      background: #050811;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      height: 240px;
+      overflow-y: auto;
+      color: #38BDF8;
+      line-height: 1.6;
+    }
+
+    .log-line { margin-bottom: 4px; }
+    .log-time { color: var(--text-muted); }
+    .log-info { color: #38BDF8; }
+    .log-warn { color: var(--amber-warning); }
+    .log-success { color: var(--green-success); }
+
+    /* Right Sidebar (Character Storyboard Inspector) */
+    .char-preview {
+      background: #090E17;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .rig-canvas {
+      width: 100%;
+      height: 200px;
+      background: radial-gradient(circle, #1E293B 0%, #0F172A 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+      font-size: 48px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header Bar -->
+  <header>
+    <div class="brand-box">
+      <div class="brand-icon">🎬</div>
+      <div>
+        <div class="brand-title">2D CARTOON STUDIO</div>
+        <div class="brand-sub">Daily Short Video Automation Pipeline</div>
+      </div>
+    </div>
+    <div class="profile-badge">
+      <div class="status-dot"></div>
+      LEGACY_LOW Profile (MX110 2GB | 720x1280 @ 24FPS)
+    </div>
+  </header>
+
+  <!-- Main Grid Layout -->
+  <main>
+    <!-- Left Main Column -->
+    <div>
+      <!-- Telemetry Card -->
+      <div class="glass-card">
+        <div class="card-header">
+          <div class="card-title">⚡ Hardware Telemetry</div>
+          <div style="font-size: 12px; color: var(--text-muted);">Real-Time System Specs</div>
+        </div>
+
+        <div class="telemetry-grid">
+          <div class="stat-card">
+            <div class="stat-lbl">GPU Dedicated VRAM</div>
+            <div class="stat-val">MX110 (2048 MB)</div>
+            <div class="stat-progress"><div class="stat-bar" style="width: 25%;"></div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-lbl">System Memory (RAM)</div>
+            <div class="stat-val">7.9 GB Available</div>
+            <div class="stat-progress"><div class="stat-bar" style="width: 40%;"></div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-lbl">CPU Architecture</div>
+            <div class="stat-val">Intel i5-7200U (4T)</div>
+            <div class="stat-progress"><div class="stat-bar" style="width: 15%;"></div></div>
+          </div>
+        </div>
+
+        <!-- Workflow Timeline -->
+        <div class="card-title" style="margin-top: 8px;">🔄 Pipeline Workflow Telemetry</div>
+        <div class="timeline">
+          <div class="step-item completed">
+            <div class="step-icon">✓</div>
+            <div class="step-title">TOPIC</div>
+          </div>
+          <div class="step-item completed">
+            <div class="step-icon">✓</div>
+            <div class="step-title">SCRIPT</div>
+          </div>
+          <div class="step-item completed">
+            <div class="step-icon">✓</div>
+            <div class="step-title">TTS VOICE</div>
+          </div>
+          <div class="step-item completed">
+            <div class="step-icon">✓</div>
+            <div class="step-title">2D RIGGING</div>
+          </div>
+          <div class="step-item completed">
+            <div class="step-icon">✓</div>
+            <div class="step-title">RENDER</div>
+          </div>
+          <div class="step-item active">
+            <div class="step-icon">★</div>
+            <div class="step-title">PUBLISHED</div>
+          </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="alert('Daily Job Started!')">
+            ▶ START TODAY'S AUTOMATION
+          </button>
+          <button class="btn btn-secondary" onclick="alert('Today\'s job state reset to PENDING.')">
+            🔄 RESET TODAY'S JOB
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Terminal Console -->
+      <div class="glass-card">
+        <div class="card-header">
+          <div class="card-title">💻 Live System Console</div>
+          <div style="font-size: 11px; color: var(--green-success);">● Secret Redaction Active</div>
+        </div>
+        <div class="console-box" id="console">
+          <div class="log-line"><span class="log-time">[19:15:00]</span> <span class="log-info">[INFO] Hardware Detected: NVIDIA GeForce MX110 (2048MB VRAM) | Intel i5-7200U | 7.9GB RAM</span></div>
+          <div class="log-line"><span class="log-time">[19:15:01]</span> <span class="log-info">[INFO] Performance Profile Loaded: LEGACY_LOW (720x1280 @ 24 FPS)</span></div>
+          <div class="log-line"><span class="log-time">[19:15:02]</span> <span class="log-info">[INFO] Topic Generated via Gemini: "AI Robot Tries Fish Curry"</span></div>
+          <div class="log-line"><span class="log-time">[19:15:03]</span> <span class="log-info">[INFO] Bengali Cloud TTS Dialogue Synthesized successfully</span></div>
+          <div class="log-line"><span class="log-time">[19:15:08]</span> <span class="log-info">[INFO] Rendered 288 2D Cartoon animation frames with viseme lip sync</span></div>
+          <div class="log-line"><span class="log-time">[19:15:09]</span> <span class="log-info">[INFO] Master Single Render completed -> output/final.mp4</span></div>
+          <div class="log-line"><span class="log-time">[19:15:10]</span> <span class="log-success">[SUCCESS] Published to Facebook Reel (Page 61593188125705) & YouTube Shorts (@Life-X-873)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column (Social Targets & Storyboard Inspector) -->
+    <div>
+      <!-- Destinations Card -->
+      <div class="glass-card">
+        <div class="card-header">
+          <div class="card-title">📡 Publishing Targets</div>
+        </div>
+        <div class="platform-list">
+          <div class="platform-row">
+            <div class="platform-name">📘 Facebook Reel</div>
+            <div class="badge-status badge-success">PUBLISHED</div>
+          </div>
+          <div class="platform-row">
+            <div class="platform-name">📸 Facebook Story</div>
+            <div class="badge-status badge-success">PUBLISHED</div>
+          </div>
+          <div class="platform-row">
+            <div class="platform-name">▶️ YouTube Shorts</div>
+            <div class="badge-status badge-success">PUBLISHED</div>
+          </div>
+        </div>
+        <div style="font-size: 11px; color: var(--text-muted); margin-top: 12px; line-height: 1.4;">
+          Target Page: <b>61593188125705</b><br>
+          Target YouTube: <b>@Life-X-873</b>
+        </div>
+      </div>
+
+      <!-- Storyboard Inspector -->
+      <div class="glass-card">
+        <div class="card-header">
+          <div class="card-title">🐱 2D Character Rig</div>
+        </div>
+        <div class="char-preview">
+          <div class="rig-canvas">🤖 🐱</div>
+          <div style="font-size: 13px; font-weight: 700;">Active Characters</div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Cat & Robot Viseme Rig</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+</body>
+</html>

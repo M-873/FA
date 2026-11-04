@@ -1,0 +1,76 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Environment and Secrets
+.env
+*.env
+!.env.example
+
+# Local Application & Runtime Settings
+app_settings.json
+!app_settings.example.json
+
+# Local Runtime Job State
+daily_job.json
+
+# OAuth & Authentication Credentials
+client_secret*.json
+youtube_token*.json
+
+# Temporary output files & caches
+tmp/
+temp/
+*.tmp
+*.log
+.pytest_cache/
+.pytest_temp/
+.coverage
+
+# Output and Generated Media
+output/*
+!output/.gitkeep
+*.mp4
+*.mkv
+*.avi
+*.mov
+
+# Downloaded Installers and Binaries
+*.exe
+
+# IDEs & Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+Thumbs.db
+Desktop.ini
+.DS_Store
