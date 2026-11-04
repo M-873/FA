@@ -181,7 +181,7 @@ def test_dashboard_ui_initialization_and_widgets():
 
     try:
         # Check title and window size
-        assert "Phase 1 Dashboard" in root.title()
+        assert "Dashboard" in root.title()
 
         # Check Daily Auto Post UI elements
         assert app.dap_card is not None

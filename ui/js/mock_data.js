@@ -164,8 +164,8 @@ const MOCK_DATA = {
   // YouTube Connection
   youtube: {
     connected: true,
-    channel_name: "My AI Cartoon Channel",
-    channel_id: "UC••••••••••••••••",
+    channel_name: "Life-X",
+    channel_id: "UCEX2BPA56iFeANOrrGY_eYg",
     handle: "@Life-X-873",
     privacy: "Public",
     auto_publish: true,

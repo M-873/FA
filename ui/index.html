@@ -133,6 +133,9 @@
               </div>
             </div>
             <div style="display: flex; align-items: center; gap: 12px;">
+              <button class="btn btn-success" id="btn-start-daily-pipeline" onclick="startDailyAutomationWorkflow()" style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: #fff; font-weight: 700; padding: 7px 16px; font-size: 13px; border-radius: 6px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35); transition: all 0.2s;">
+                <span id="start-btn-icon">▶</span> <span id="start-btn-text">শুরু করুন (Start Workflow)</span>
+              </button>
               <span class="badge badge-neutral" id="web-dap-status-badge">○ OFF</span>
               <label class="switch" title="Toggle Daily Auto Post">
                 <input type="checkbox" id="web-dap-toggle" onchange="handleWebDapToggle(this.checked)">
@@ -154,6 +157,36 @@
             <div>
               <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">TODAY'S PROGRESS</div>
               <div id="web-dap-progress" style="font-size: 14px; font-weight: 600; color: var(--status-success); margin-top: 4px;">Idle (0/1 image) [MOCK]</div>
+            </div>
+          </div>
+
+          <!-- Live Workflow Progress Monitor (Revealed upon Start) -->
+          <div id="workflow-live-progress-container" style="display: none; background: rgba(16, 185, 129, 0.06); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-md); padding: 16px 20px; margin-top: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="status-dot-mini" style="background: #10B981; animation: pulse 1.2s infinite;"></div>
+                <span id="live-stage-title" style="font-size: 13px; font-weight: 700; color: #10B981; text-transform: uppercase; letter-spacing: 0.5px;">AUTOMATION ACTIVE</span>
+              </div>
+              <span id="live-stage-percent" style="font-size: 13px; font-weight: 700; color: var(--accent-cyan);">0%</span>
+            </div>
+            
+            <div style="font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 10px;" id="live-stage-description">
+              Initializing Lightweight 2D Cartoon Pipeline...
+            </div>
+
+            <div style="width: 100%; height: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 4px; overflow: hidden; margin-bottom: 12px;">
+              <div id="live-progress-bar-fill" style="width: 0%; height: 100%; background: linear-gradient(90deg, #10B981 0%, #00F2FE 100%); transition: width 0.4s ease; border-radius: 4px;"></div>
+            </div>
+
+            <!-- Live Stage Steps Indicators -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; margin-top: 10px;" id="live-steps-grid">
+              <div class="step-pill" id="step-pill-1" style="font-size: 11px; padding: 6px 8px; border-radius: 4px; background: var(--bg-card-inner); border: 1px solid var(--border-color); text-align: center; color: var(--text-muted);">1. Topic</div>
+              <div class="step-pill" id="step-pill-2" style="font-size: 11px; padding: 6px 8px; border-radius: 4px; background: var(--bg-card-inner); border: 1px solid var(--border-color); text-align: center; color: var(--text-muted);">2. Script</div>
+              <div class="step-pill" id="step-pill-3" style="font-size: 11px; padding: 6px 8px; border-radius: 4px; background: var(--bg-card-inner); border: 1px solid var(--border-color); text-align: center; color: var(--text-muted);">3. Voice (TTS)</div>
+              <div class="step-pill" id="step-pill-4" style="font-size: 11px; padding: 6px 8px; border-radius: 4px; background: var(--bg-card-inner); border: 1px solid var(--border-color); text-align: center; color: var(--text-muted);">4. 2D Rig & Viseme</div>
+              <div class="step-pill" id="step-pill-5" style="font-size: 11px; padding: 6px 8px; border-radius: 4px; background: var(--bg-card-inner); border: 1px solid var(--border-color); text-align: center; color: var(--text-muted);">5. FFmpeg Render</div>
+              <div class="step-pill" id="step-pill-6" style="font-size: 11px; padding: 6px 8px; border-radius: 4px; background: var(--bg-card-inner); border: 1px solid var(--border-color); text-align: center; color: var(--text-muted);">6. Quality Check</div>
+              <div class="step-pill" id="step-pill-7" style="font-size: 11px; padding: 6px 8px; border-radius: 4px; background: var(--bg-card-inner); border: 1px solid var(--border-color); text-align: center; color: var(--text-muted);">7. YouTube Shorts</div>
             </div>
           </div>
         </div>
