@@ -170,3 +170,5 @@ python -m pytest
 - **No Heavy Local Models**: Cloud AI APIs (Gemini, Cloud TTS) are used to prevent overloading MX110 GPUs or 8GB RAM.
 - **Zero Database**: Job state is stored statelssly in `daily_job.json`.
 - **No Browser Automation**: Only official Meta Graph API and YouTube Data API endpoints are used.
+#   F A  
+ 
