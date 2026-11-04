@@ -230,6 +230,57 @@ class SettingsManager:
         self.data = get_default_settings()
         self.save()
 
+    # -------------------------------------------------------------------------
+    # Connected Accounts Management
+    # -------------------------------------------------------------------------
+    def get_connected_accounts(self) -> Dict[str, Any]:
+        return self.data.get("connected_accounts", get_default_settings()["connected_accounts"])
+
+    def get_youtube_connection(self) -> Dict[str, Any]:
+        accounts = self.get_connected_accounts()
+        return accounts.get("youtube", {"status": "Not Connected"})
+
+    def update_youtube_connection(
+        self,
+        status: str,
+        channel_title: Optional[str] = None,
+        channel_id: Optional[str] = None,
+        handle: Optional[str] = None,
+        channel_url: Optional[str] = None,
+    ) -> None:
+        import datetime
+        accounts = self.data.setdefault("connected_accounts", {})
+        yt = accounts.setdefault("youtube", {})
+        yt["status"] = status
+        if channel_title is not None:
+            yt["channel_title"] = channel_title
+            yt["username"] = channel_title
+        if channel_id is not None:
+            yt["channel_id"] = channel_id
+        if handle is not None:
+            yt["handle"] = handle
+        if channel_url is not None:
+            yt["channel_url"] = channel_url
+        if status == "Connected":
+            yt["connected_at"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.save()
+        logger.info(f"Updated YouTube connection status: {status} (Channel: {channel_title or yt.get('channel_title')})")
+
+    def disconnect_youtube(self) -> None:
+        accounts = self.data.setdefault("connected_accounts", {})
+        accounts["youtube"] = {
+            "status": "Not Connected",
+            "username": None,
+            "channel_title": None,
+            "channel_id": None,
+            "handle": None,
+            "channel_url": None,
+            "connected_at": None,
+        }
+        self.save()
+        logger.info("YouTube account disconnected from settings.")
+
+
 
 def load_settings(filepath: Optional[str] = None) -> Dict[str, Any]:
     """Module-level helper to load settings dictionary."""

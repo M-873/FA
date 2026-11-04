@@ -514,15 +514,16 @@ class AutoPostDashboardApp:
             row_inner = tk.Frame(row, bg=self.c_card_inner)
             row_inner.pack(fill="x", padx=12, pady=8)
 
-            tk.Label(
+            lbl = tk.Label(
                 row_inner,
                 text=name,
                 font=self.font_bold,
                 fg=self.c_text_main,
                 bg=self.c_card_inner,
-            ).pack(side="left")
+            )
+            lbl.pack(side="left")
 
-            # Connect placeholder button (clearly marked)
+            # Connect button
             connect_btn = tk.Button(
                 row_inner,
                 text="Connect",
@@ -539,9 +540,15 @@ class AutoPostDashboardApp:
             )
             connect_btn.pack(side="right")
 
-            # "Not Connected" Status Badge
+            # Status Badge
             badge = StatusBadge(row_inner, status="NOT CONNECTED")
             badge.pack(side="right", padx=(0, 10))
+
+            if "YouTube" in name:
+                self.yt_account_label = lbl
+                self.yt_connect_btn = connect_btn
+                self.yt_status_badge = badge
+                connect_btn.config(command=self._handle_youtube_click)
 
         # ----------------------------------------------------------------------
         # SECTION D: Hardware Information Panel
@@ -992,6 +999,71 @@ class AutoPostDashboardApp:
 
         self.ltr_toggle.set_state(ltr_enabled, trigger_callback=False)
         self.ltr_status_badge.set_status(ltr_status)
+
+        # Sync YouTube Account
+        self._sync_youtube_account_ui()
+
+    def _sync_youtube_account_ui(self):
+        """Synchronizes YouTube account connection row with persisted status."""
+        if not hasattr(self, "yt_status_badge"):
+            return
+        yt_conn = self.settings_manager.get_youtube_connection()
+        status = yt_conn.get("status", "Not Connected")
+        channel_title = yt_conn.get("channel_title") or yt_conn.get("username")
+
+        if status == "Connected" and channel_title:
+            self.yt_account_label.config(text=f"▶️ YouTube ({channel_title})")
+            self.yt_status_badge.set_status("CONNECTED")
+            self.yt_connect_btn.config(text="Reconnect", bg="#0F766E", fg="#5EEAD4")
+        elif status == "Expired":
+            self.yt_account_label.config(text=f"▶️ YouTube ({channel_title or 'Life-X-873'})")
+            self.yt_status_badge.set_status("EXPIRED")
+            self.yt_connect_btn.config(text="Reconnect", bg="#B45309", fg="#FDE68A")
+        elif status == "Error":
+            self.yt_account_label.config(text="▶️ YouTube")
+            self.yt_status_badge.set_status("ERROR")
+            self.yt_connect_btn.config(text="Retry", bg="#B91C1C", fg="#FECACA")
+        else:
+            self.yt_account_label.config(text="▶️ YouTube")
+            self.yt_status_badge.set_status("NOT CONNECTED")
+            self.yt_connect_btn.config(text="Connect", bg="#334155", fg="#94A3B8")
+
+    def _handle_youtube_click(self):
+        """Triggers interactive browser OAuth flow in a background thread."""
+        import threading
+        from app.youtube.auth import YouTubeAuthManager
+
+        def run_auth():
+            self.root.after(0, lambda: self.yt_connect_btn.config(text="Opening...", state="disabled"))
+            self.root.after(0, lambda: self._update_footer("Opening browser for YouTube OAuth consent..."))
+
+            auth_mgr = YouTubeAuthManager()
+            res = auth_mgr.authenticate_interactive()
+
+            def on_complete():
+                self.yt_connect_btn.config(state="normal")
+                self._sync_youtube_account_ui()
+                if res.get("success"):
+                    messagebox.showinfo(
+                        "YouTube Connected",
+                        f"Successfully connected to YouTube channel:\n\n"
+                        f"Channel: {res.get('channel_title')}\n"
+                        f"Handle: {res.get('handle')}\n"
+                        f"Channel ID: {res.get('channel_id')}\n\n"
+                        f"Tokens safely stored in Windows Credential Manager.",
+                    )
+                    self._update_footer(f"YouTube Connected: {res.get('channel_title')}")
+                else:
+                    messagebox.showerror(
+                        "YouTube Connection Failed",
+                        f"Failed to connect YouTube account:\n\n{res.get('error')}",
+                    )
+                    self._update_footer("YouTube connection failed.")
+
+            self.root.after(0, on_complete)
+
+        threading.Thread(target=run_auth, daemon=True).start()
+
 
     # --------------------------------------------------------------------------
     # Hardware Telemetry & Adaptive Profile Controller (Phase 2)
