@@ -46,6 +46,7 @@ class RenderSettings(BaseModel):
     fps: int = Field(default=24, description="Target frames per second")
     codec_preset: str = Field(default="ultrafast", description="FFmpeg encoding speed preset")
     crf: int = Field(default=26, description="Constant Rate Factor for x264 video quality")
+    max_duration_seconds: int = Field(default=15, description="Maximum video animation duration ceiling in seconds")
     sequential_processing: bool = Field(default=True, description="Strict single-job sequential processing")
 
 

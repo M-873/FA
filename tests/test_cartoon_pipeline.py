@@ -47,12 +47,17 @@ def test_animation_engine(tmp_path):
 
 
 def test_end_to_end_pipeline_dry_run(tmp_path):
+    from unittest.mock import patch
+    from app.ai.ollama_manager import OllamaHardwareManager
+
     env = get_env_settings()
     env.DRY_RUN = True
 
-    pipeline = DailyCartoonAutomationPipeline()
-    res = pipeline.run_daily_pipeline()
+    with patch.object(OllamaHardwareManager, "is_ollama_running", return_value=False), \
+         patch.object(OllamaHardwareManager, "auto_install_ollama_if_needed", return_value=False):
+        pipeline = DailyCartoonAutomationPipeline()
+        res = pipeline.run_daily_pipeline()
 
-    assert "success" in res
-    assert res["success"] is True
+        assert "success" in res
+        assert res["success"] is True
     assert res["job_status"] in ("PUBLISHED", "PARTIALLY_PUBLISHED")
