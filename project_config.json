@@ -21,6 +21,7 @@
     "#Reels",
     "#Shorts"
   ],
+  "youtube_category_id": "24",
   "auto_run_on_start": true,
   "start_with_windows": false
 }

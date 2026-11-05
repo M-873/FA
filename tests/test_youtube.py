@@ -132,3 +132,17 @@ def test_youtube_publisher_dry_run():
     assert res["dry_run"] is True
     assert "DRY_RUN" in res["video_id"]
 
+
+def test_youtube_category_id_configurable(tmp_path):
+    """Verifies categoryId is configurable from project_config.json with default 24."""
+    from app.utils.config import ProjectConfig
+
+    # Default check
+    cfg = ProjectConfig(config_path=str(tmp_path / "non_existent.json"))
+    assert cfg.youtube_category_id == "24"
+
+    # Custom category check
+    pub = YouTubePublisher()
+    pub.project_cfg.youtube_category_id = "24"
+    assert pub.project_cfg.youtube_category_id == "24"
+

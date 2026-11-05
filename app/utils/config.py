@@ -20,6 +20,7 @@ class ProjectConfig:
         self.subtitle_style: str = "yellow_shadow_bold"
         self.music_style: str = "upbeat_lofi_playful"
         self.default_hashtags: List[str] = ["#AICartoon", "#TechShorts", "#Reels", "#Shorts"]
+        self.youtube_category_id: str = "24"
         self.auto_run_on_start: bool = True
         self.start_with_windows: bool = False
         self.load()
@@ -47,6 +48,7 @@ class ProjectConfig:
             "subtitle_style": self.subtitle_style,
             "music_style": self.music_style,
             "default_hashtags": self.default_hashtags,
+            "youtube_category_id": self.youtube_category_id,
             "auto_run_on_start": self.auto_run_on_start,
             "start_with_windows": self.start_with_windows,
         }

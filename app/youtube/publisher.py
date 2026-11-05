@@ -75,12 +75,13 @@ class YouTubePublisher:
         tags = list(hashtags or self.project_cfg.default_hashtags)
         cleaned_tags = [t.replace("#", "") for t in tags] + ["Shorts", "Short"]
 
+        category = getattr(self.project_cfg, "youtube_category_id", "24")
         return self.publish_video(
             video_path=video_path,
             title=full_title,
             description=f"{description}\n\n{' '.join(tags)}",
             tags=cleaned_tags,
-            category_id="28",  # Science & Technology
+            category_id=category,
             privacy_status=privacy_status,
             progress_callback=progress_callback,
         )
@@ -94,7 +95,7 @@ class YouTubePublisher:
         title: str,
         description: str,
         tags: Optional[List[str]] = None,
-        category_id: str = "28",
+        category_id: Optional[str] = None,
         privacy_status: str = "public",
         scheduled_publish_time: Optional[str] = None,
         thumbnail_path: Optional[str] = None,
@@ -104,6 +105,8 @@ class YouTubePublisher:
         Executes resumable chunked upload to YouTube Data API v3.
         Supports scheduled release (via private + publishAt parameter).
         """
+        if category_id is None:
+            category_id = getattr(self.project_cfg, "youtube_category_id", "24")
         if not os.path.exists(video_path):
             raise FileNotFoundError(f"Video file not found: {video_path}")
 
