@@ -43,12 +43,16 @@ daily_job.json
 # OAuth & Authentication Credentials
 client_secret*.json
 youtube_token*.json
+token*.json
+*.token
 
 # Temporary output files & caches
 tmp/
 temp/
 *.tmp
 *.log
+logs/
+.cache/
 .pytest_cache/
 .pytest_temp/
 .coverage
@@ -60,6 +64,12 @@ output/*
 *.mkv
 *.avi
 *.mov
+
+# Models
+models/
+*.bin
+*.onnx
+*.safetensors
 
 # Downloaded Installers and Binaries
 *.exe
