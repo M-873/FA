@@ -1,5 +1,5 @@
 import os
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from app.ai.gemini import GeminiCartoonAIProvider
 from app.animation.engine import CartoonAnimationEngine
 from app.facebook.reels import FacebookReelPublisher
@@ -26,10 +26,10 @@ class DailyCartoonAutomationPipeline:
     Supports partial failure recovery (e.g. retrying failed YouTube upload without re-rendering).
     """
 
-    def __init__(self):
+    def __init__(self, job_manager: Optional[DailyJobManager] = None):
         self.project_cfg = get_project_config()
         self.env_cfg = get_env_settings()
-        self.job_mgr = DailyJobManager()
+        self.job_mgr = job_manager if job_manager is not None else DailyJobManager()
 
     def run_daily_pipeline(self) -> Dict[str, Any]:
         """Executes today's automated video pipeline."""
@@ -187,7 +187,10 @@ class DailyCartoonAutomationPipeline:
         yt_ok = job.youtube_status == "SUCCESS"
 
         if fb_ok and yt_ok:
-            job.update_status(JobStatus.PUBLISHED)
+            if self.env_cfg.DRY_RUN:
+                job.update_status(JobStatus.DRY_RUN_COMPLETE)
+            else:
+                job.update_status(JobStatus.PUBLISHED)
         elif yt_ok or job.facebook_reel == "SUCCESS":
             job.update_status(JobStatus.PARTIALLY_PUBLISHED)
         else:
@@ -208,7 +211,7 @@ class DailyCartoonAutomationPipeline:
         logger.info("==============================================================================")
 
         return {
-            "success": job.status in (JobStatus.PUBLISHED, JobStatus.PARTIALLY_PUBLISHED),
+            "success": job.status in (JobStatus.PUBLISHED, JobStatus.PARTIALLY_PUBLISHED, JobStatus.DRY_RUN_COMPLETE),
             "job_status": job.status.value,
             "facebook_reel": job.facebook_reel,
             "youtube_status": job.youtube_status,

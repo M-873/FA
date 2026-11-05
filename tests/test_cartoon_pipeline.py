@@ -60,4 +60,4 @@ def test_end_to_end_pipeline_dry_run(tmp_path):
 
         assert "success" in res
         assert res["success"] is True
-    assert res["job_status"] in ("PUBLISHED", "PARTIALLY_PUBLISHED")
+    assert res["job_status"] in ("PUBLISHED", "PARTIALLY_PUBLISHED", "DRY_RUN_COMPLETE")
