@@ -567,15 +567,6 @@ class AutoPostDashboardApp:
                 connect_btn.config(command=self._handle_youtube_click)
 
         # ----------------------------------------------------------------------
-        # SECTION D: Hardware Information Panel
-        # ----------------------------------------------------------------------
-        self.hw_card = CardFrame(two_col, bg=self.c_card, border_color=self.c_border)
-        self.hw_card.grid(row=0, column=1, sticky="nsew", padx=(6, 0))
-
-        hw_header = tk.Frame(self.hw_card, bg=self.c_card)
-        hw_header.pack(fill="x", padx=16, pady=(14, 8))
-
-        # ----------------------------------------------------------------------
         # SECTION D: Hardware Information Panel (Phase 2 Real Detection)
         # ----------------------------------------------------------------------
         self.hw_card = CardFrame(two_col, bg=self.c_card, border_color=self.c_border)
