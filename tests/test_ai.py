@@ -80,7 +80,7 @@ def test_ollama_hardware_compatibility():
     # 1. Low-end setup (MX110 2GB + 8GB RAM) -> Selects ultra-lightweight tier model (qwen2.5:0.5b)
     low_specs = HardwareSpecs(
         cpu_name="i5-7200U", cpu_cores=2, cpu_threads=4,
-        ram_gb=8.0, available_ram_gb=4.0,
+        ram_total_gb=8.0, ram_available_gb=4.0,
         gpu_name="NVIDIA GeForce MX110", gpu_vendor="NVIDIA", vram_mb=2048,
         os_version="Windows 11", driver_version="536.23", cuda_available=True
     )
@@ -91,7 +91,7 @@ def test_ollama_hardware_compatibility():
     # 2. High-end setup (RTX 4060 / 4070 12GB + 32GB RAM) -> Selects high tier model (llama3.2:3b)
     high_specs = HardwareSpecs(
         cpu_name="i7-13700K", cpu_cores=16, cpu_threads=24,
-        ram_gb=32.0, available_ram_gb=24.0,
+        ram_total_gb=32.0, ram_available_gb=24.0,
         gpu_name="NVIDIA GeForce RTX 4060", gpu_vendor="NVIDIA", vram_mb=8192,
         os_version="Windows 11", driver_version="550.00", cuda_available=True
     )
@@ -100,5 +100,8 @@ def test_ollama_hardware_compatibility():
     assert optimal_high == "llama3.2:3b"
 
     # 3. Factory returns Gemini by default when Ollama daemon is offline
-    provider = AIProviderFactory.get_provider(low_specs)
-    assert isinstance(provider, GeminiCartoonAIProvider)
+    from unittest.mock import patch
+    with patch.object(OllamaHardwareManager, "is_ollama_running", return_value=False), \
+         patch.object(OllamaHardwareManager, "auto_install_ollama_if_needed", return_value=False):
+        provider = AIProviderFactory.get_provider(low_specs)
+        assert isinstance(provider, GeminiCartoonAIProvider)
