@@ -16,6 +16,8 @@ Key Policy Rules:
    System RAM, CPU threads, and dedicated VRAM must all satisfy profile requirements.
 4. If hardware data is incomplete (e.g. VRAM unknown), a conservative provisional
    profile is selected.
+5. VRAM thresholds use tolerant values to accommodate binary/WDDM reporting disparities
+   (e.g. 8GB GPUs reporting ~8151 MB, 12GB GPUs reporting ~12000 MB, etc.).
 """
 
 from dataclasses import dataclass
@@ -37,9 +39,10 @@ class ProfileThresholdCriteria:
 
 
 # Threshold specifications for deterministic classification
+# Tolerant VRAM thresholds account for WDDM / binary MB reporting variations
 PROFILE_THRESHOLDS: Dict[str, ProfileThresholdCriteria] = {
     "ULTRA": ProfileThresholdCriteria(
-        min_vram_mb=12288,         # 12 GB+ dedicated VRAM (RTX 4080, 4090, 3090)
+        min_vram_mb=11500,         # 12 GB+ dedicated VRAM (e.g. RTX 4080, 4090, 3090, often reported as ~12100-12288 MB)
         min_system_ram_gb=32.0,    # 32 GB system RAM
         min_available_ram_gb=16.0, # At least 16 GB currently free
         min_cpu_threads=12,        # 12+ logical cores
@@ -50,7 +53,7 @@ PROFILE_THRESHOLDS: Dict[str, ProfileThresholdCriteria] = {
         description="High-end workstation capable of local large LLMs and unconstrained rendering.",
     ),
     "HIGH": ProfileThresholdCriteria(
-        min_vram_mb=8192,          # 8 GB dedicated VRAM (RTX 4060, 4070, 3070)
+        min_vram_mb=7500,          # 8 GB dedicated VRAM (e.g. RTX 5060, 4060, 4070, 3070, reported as ~8151-8192 MB)
         min_system_ram_gb=16.0,    # 16 GB system RAM
         min_available_ram_gb=8.0,  # At least 8 GB currently free
         min_cpu_threads=8,         # 8+ logical cores
@@ -61,7 +64,7 @@ PROFILE_THRESHOLDS: Dict[str, ProfileThresholdCriteria] = {
         description="Modern gaming/creator PC capable of medium local models and parallel processing.",
     ),
     "MEDIUM": ProfileThresholdCriteria(
-        min_vram_mb=6144,          # 6 GB dedicated VRAM (RTX 2060, RTX 3060 6GB)
+        min_vram_mb=5500,          # 6 GB dedicated VRAM (RTX 2060, RTX 3060 6GB, reported as ~5800-6144 MB)
         min_system_ram_gb=14.0,    # 14-16 GB system RAM
         min_available_ram_gb=5.0,  # 5 GB free
         min_cpu_threads=6,         # 6+ logical cores
@@ -72,7 +75,7 @@ PROFILE_THRESHOLDS: Dict[str, ProfileThresholdCriteria] = {
         description="Mid-tier system suitable for quantized small models and sequential rendering.",
     ),
     "LOW": ProfileThresholdCriteria(
-        min_vram_mb=3072,          # 3-4 GB dedicated VRAM (GTX 1050Ti, GTX 1650, etc.)
+        min_vram_mb=2800,          # 3-4 GB dedicated VRAM (GTX 1050Ti, GTX 1650, etc., reported as ~3000-4096 MB)
         min_system_ram_gb=8.0,     # 8 GB system RAM
         min_available_ram_gb=2.5,  # 2.5 GB free
         min_cpu_threads=4,         # 4 logical cores

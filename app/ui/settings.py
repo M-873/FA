@@ -67,6 +67,7 @@ def get_default_settings() -> Dict[str, Any]:
             "instagram": {"status": "Not Connected", "handle": None},
         },
         "hardware_report": None,
+        "hardware_profile_override": "auto",
     }
 
 
@@ -229,6 +230,23 @@ class SettingsManager:
         """Resets all settings to default state."""
         self.data = get_default_settings()
         self.save()
+
+    # -------------------------------------------------------------------------
+    # Hardware Profile Override
+    # -------------------------------------------------------------------------
+    def get_hardware_profile_override(self) -> str:
+        """Returns the manual hardware profile override: auto, low, medium, or high."""
+        val = self.data.get("hardware_profile_override", "auto")
+        return str(val).lower() if val else "auto"
+
+    def set_hardware_profile_override(self, override: str) -> None:
+        """Sets the manual hardware profile override: auto, low, medium, or high."""
+        val = str(override).lower().strip()
+        if val not in ("auto", "low", "medium", "high", "ultra", "legacy_2gb"):
+            raise ValueError(f"Invalid profile override '{override}'. Must be auto, low, medium, high, ultra, or legacy_2gb.")
+        self.data["hardware_profile_override"] = val
+        self.save()
+        logger.info(f"Hardware profile override updated to: {val}")
 
     # -------------------------------------------------------------------------
     # Connected Accounts Management
