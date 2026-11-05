@@ -52,7 +52,7 @@ class DailyCartoonAutomationPipeline:
         # Check Partial Failure Recovery
         if job.status == JobStatus.PARTIALLY_PUBLISHED and job.video_path and os.path.exists(job.video_path):
             logger.info("Detected PARTIALLY_PUBLISHED state. Resuming upload stage for failed platform without re-rendering...")
-            return self._resume_uploads(job, job.video_path, topic_title=job.topic_title or "Cartoon Short")
+            return self._resume_uploads(job, job.video_path, metadata={"title": job.topic_title or "Cartoon Short"})
 
         with TempFileManager(prefix="cartoon_render_") as temp_mgr:
             # 3. AI Generation Stage
@@ -124,9 +124,18 @@ class DailyCartoonAutomationPipeline:
 
     def _resume_uploads(self, job: DailyJobState, master_mp4_path: str, metadata: Dict[str, Any] = None) -> Dict[str, Any]:
         """Uploads the SAME master MP4 file to Facebook and YouTube with status state tracking."""
-        title = metadata.get("title", job.topic_title or "AI Cartoon Short") if metadata else job.topic_title or "AI Cartoon Short"
-        description = metadata.get("description", "Daily 2D Cartoon AI Short") if metadata else "Daily 2D Cartoon AI Short"
-        hashtags = metadata.get("hashtags", self.project_cfg.default_hashtags) if metadata else self.project_cfg.default_hashtags
+        if isinstance(metadata, dict):
+            title = metadata.get("title", job.topic_title or "AI Cartoon Short")
+            description = metadata.get("description", "Daily 2D Cartoon AI Short")
+            hashtags = metadata.get("hashtags", self.project_cfg.default_hashtags)
+        elif isinstance(metadata, str):
+            title = metadata
+            description = "Daily 2D Cartoon AI Short"
+            hashtags = self.project_cfg.default_hashtags
+        else:
+            title = job.topic_title or "AI Cartoon Short"
+            description = "Daily 2D Cartoon AI Short"
+            hashtags = self.project_cfg.default_hashtags
         full_caption = f"{description}\n\n{' '.join(hashtags)}"
 
         # 8a. Facebook Reel & Story Upload
