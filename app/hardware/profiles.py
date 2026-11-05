@@ -45,6 +45,7 @@ class RenderSettings(BaseModel):
     resolution_height: int = Field(default=1280, description="Video height in pixels")
     fps: int = Field(default=24, description="Target frames per second")
     codec_preset: str = Field(default="ultrafast", description="FFmpeg encoding speed preset")
+    crf: int = Field(default=26, description="Constant Rate Factor for x264 video quality")
     sequential_processing: bool = Field(default=True, description="Strict single-job sequential processing")
 
 
@@ -73,11 +74,11 @@ class HardwareProfileManager:
     def _get_render_settings_for_profile(cls, profile_name: str) -> RenderSettings:
         prof_upper = str(profile_name).upper()
         if "LEGACY" in prof_upper or prof_upper == "LOW":
-            return RenderSettings(resolution_width=720, resolution_height=1280, fps=24, codec_preset="ultrafast")
+            return RenderSettings(resolution_width=720, resolution_height=1280, fps=24, codec_preset="ultrafast", crf=28)
         elif prof_upper == "MEDIUM":
-            return RenderSettings(resolution_width=1080, resolution_height=1920, fps=30, codec_preset="medium")
+            return RenderSettings(resolution_width=1080, resolution_height=1920, fps=30, codec_preset="medium", crf=23)
         else:  # HIGH, ULTRA
-            return RenderSettings(resolution_width=1080, resolution_height=1920, fps=60, codec_preset="fast")
+            return RenderSettings(resolution_width=1080, resolution_height=1920, fps=60, codec_preset="fast", crf=20)
 
     @classmethod
     def determine_profile(
