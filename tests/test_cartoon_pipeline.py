@@ -56,6 +56,7 @@ def test_end_to_end_pipeline_dry_run(tmp_path):
     with patch.object(OllamaHardwareManager, "is_ollama_running", return_value=False), \
          patch.object(OllamaHardwareManager, "auto_install_ollama_if_needed", return_value=False):
         pipeline = DailyCartoonAutomationPipeline()
+        pipeline.project_cfg.require_human_approval = False
         res = pipeline.run_daily_pipeline()
 
         assert "success" in res

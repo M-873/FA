@@ -20,6 +20,9 @@ def main():
     parser.add_argument("--gui", action="store_true", help="Launch Windows Tkinter GUI mode")
     parser.add_argument("--reset-job", action="store_true", help="Reset today's job state to PENDING")
     parser.add_argument("--dry-run", action="store_true", help="Enable dry run mode (do not upload)")
+    parser.add_argument("--approve", action="store_true", help="Approve today's rendered video and resume publishing")
+    parser.add_argument("--reject", action="store_true", help="Reject today's rendered video and reset state")
+    parser.add_argument("--regenerate", action="store_true", help="Reject today's rendered video and regenerate immediately")
 
     args = parser.parse_args()
     env_cfg = get_env_settings()
@@ -32,6 +35,27 @@ def main():
         job_mgr = DailyJobManager()
         job_mgr.reset_job()
         logger.info("Today's job state reset to PENDING.")
+        return
+
+    if args.approve:
+        logger.info("Received --approve CLI command. Resuming publishing...")
+        pipeline = DailyCartoonAutomationPipeline()
+        res = pipeline.approve_job()
+        logger.info(f"Approve result: {res}")
+        return
+
+    if args.regenerate:
+        logger.info("Received --regenerate CLI command. Resetting and re-running...")
+        pipeline = DailyCartoonAutomationPipeline()
+        res = pipeline.reject_job(regenerate=True)
+        logger.info(f"Regenerate result: {res}")
+        return
+
+    if args.reject:
+        logger.info("Received --reject CLI command. Resetting today's job...")
+        pipeline = DailyCartoonAutomationPipeline()
+        res = pipeline.reject_job(regenerate=False)
+        logger.info(f"Reject result: {res}")
         return
 
     if args.cli:

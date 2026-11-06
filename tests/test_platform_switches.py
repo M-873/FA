@@ -63,6 +63,7 @@ def test_platform_switches_youtube_only(
     pipeline.project_cfg.youtube_enabled = True
     pipeline.project_cfg.facebook_enabled = False
     pipeline.project_cfg.instagram_enabled = False
+    pipeline.project_cfg.require_human_approval = False
     pipeline.env_cfg.DRY_RUN = True
     pipeline.env_cfg.FACEBOOK_ENABLED = None
     pipeline.env_cfg.YOUTUBE_ENABLED = None
@@ -137,6 +138,7 @@ def test_platform_switches_facebook_only(
     pipeline.project_cfg.youtube_enabled = False
     pipeline.project_cfg.facebook_enabled = True
     pipeline.project_cfg.instagram_enabled = False
+    pipeline.project_cfg.require_human_approval = False
     pipeline.env_cfg.DRY_RUN = True
     pipeline.env_cfg.FACEBOOK_ENABLED = None
     pipeline.env_cfg.YOUTUBE_ENABLED = None

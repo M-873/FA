@@ -13,6 +13,7 @@ def test_cartoon_workflow_dry_run():
     pipeline = DailyCartoonAutomationPipeline()
     pipeline.project_cfg.facebook_enabled = True
     pipeline.project_cfg.youtube_enabled = True
+    pipeline.project_cfg.require_human_approval = False
     res = pipeline.run_daily_pipeline()
 
     assert "success" in res

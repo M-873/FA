@@ -39,6 +39,13 @@ class DailyJobManager:
         except Exception as e:
             logger.error(f"Error saving job state to {self.state_file_path}: {e}")
 
+    def get_today_job(self) -> Optional[DailyJobState]:
+        """Returns today's existing job if present and matching today's date, else None."""
+        existing_job = self.load_job()
+        if existing_job and existing_job.date == self.get_today_date_str():
+            return existing_job
+        return None
+
     def get_or_create_today_job(self) -> DailyJobState:
         """
         Retrieves today's job. If today's job already exists, returns it.

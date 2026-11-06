@@ -53,6 +53,16 @@ class DailyCartoonAutomationPipeline:
             logger.info("Detected PARTIALLY_PUBLISHED state. Resuming upload stage for failed platform without re-rendering...")
             return self._resume_uploads(job, job.video_path, metadata={"title": job.topic_title or "Video Short"})
 
+        # Check Awaiting Approval
+        if job.status == JobStatus.AWAITING_APPROVAL and job.video_path and os.path.exists(job.video_path):
+            logger.info(f"[AWAITING APPROVAL] Today's video ({job.date}) is waiting for human approval at {job.video_path}.")
+            return {
+                "success": True,
+                "job_status": JobStatus.AWAITING_APPROVAL.value,
+                "video_path": job.video_path,
+                "awaiting_approval": True,
+            }
+
         with TempFileManager(prefix="daily_render_") as temp_mgr:
             # 3. AI Generation Stage
             job.update_status(JobStatus.GENERATING_TOPIC)
@@ -124,6 +134,31 @@ class DailyCartoonAutomationPipeline:
                 return {"success": False, "reason": quality_res.get("reason")}
 
             job.video_path = final_mp4_path
+
+            # Check human approval requirement
+            approval_needed = (
+                self.env_cfg.REQUIRE_HUMAN_APPROVAL
+                if self.env_cfg.REQUIRE_HUMAN_APPROVAL is not None
+                else getattr(self.project_cfg, "require_human_approval", True)
+            )
+            if approval_needed:
+                job.update_status(JobStatus.AWAITING_APPROVAL)
+                self.job_mgr.save_job(job)
+                abs_video_path = os.path.abspath(final_mp4_path)
+                logger.info("=" * 78)
+                logger.info(f"JOB PAUSED FOR HUMAN APPROVAL: {job.job_id}")
+                logger.info(f"Rendered Video: {abs_video_path}")
+                logger.info(f"Topic: {job.topic_title}")
+                logger.info("To approve and publish, run: python -m app.main --approve")
+                logger.info("To reject and regenerate, run: python -m app.main --reject")
+                logger.info("=" * 78)
+                return {
+                    "success": True,
+                    "job_status": JobStatus.AWAITING_APPROVAL.value,
+                    "video_path": final_mp4_path,
+                    "awaiting_approval": True,
+                }
+
             job.update_status(JobStatus.READY_TO_UPLOAD)
             self.job_mgr.save_job(job)
 
@@ -270,3 +305,46 @@ class DailyCartoonAutomationPipeline:
             "facebook_reel": job.facebook_reel,
             "youtube_status": job.youtube_status,
         }
+
+    def approve_job(self) -> Dict[str, Any]:
+        """
+        Approves today's job currently in AWAITING_APPROVAL state and resumes publishing.
+        """
+        job = self.job_mgr.get_today_job()
+        if not job or job.status != JobStatus.AWAITING_APPROVAL:
+            msg = f"Cannot approve: No job in AWAITING_APPROVAL state (current status: {job.status.value if job else 'None'})."
+            logger.warning(msg)
+            return {"success": False, "reason": msg}
+
+        if not job.video_path or not os.path.exists(job.video_path):
+            msg = f"Cannot approve: Rendered video file '{job.video_path}' not found on disk."
+            logger.error(msg)
+            job.update_status(JobStatus.FAILED, error=msg)
+            self.job_mgr.save_job(job)
+            return {"success": False, "reason": msg}
+
+        logger.info(f"Human approval received for job {job.job_id}. Resuming publication...")
+        job.update_status(JobStatus.READY_TO_UPLOAD)
+        self.job_mgr.save_job(job)
+        return self._resume_uploads(job, job.video_path, metadata={"title": job.topic_title or "AI Video Short"})
+
+    def reject_job(self, regenerate: bool = False) -> Dict[str, Any]:
+        """
+        Rejects today's job in AWAITING_APPROVAL state.
+        Resets state to PENDING so pipeline can regenerate fresh content.
+        If regenerate is True, immediately starts a new pipeline run.
+        """
+        job = self.job_mgr.get_today_job()
+        if not job:
+            msg = "Cannot reject: No job found for today."
+            logger.warning(msg)
+            return {"success": False, "reason": msg}
+
+        logger.info(f"Rejecting job {job.job_id}. Resetting job state to PENDING...")
+        self.job_mgr.reset_job()
+
+        if regenerate:
+            logger.info("Regenerating daily video from scratch...")
+            return self.run_daily_pipeline()
+
+        return {"success": True, "job_status": JobStatus.PENDING.value, "rejected": True}

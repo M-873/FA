@@ -26,6 +26,7 @@
   "youtube_enabled": true,
   "facebook_enabled": false,
   "instagram_enabled": false,
+  "require_human_approval": true,
   "auto_run_on_start": true,
   "start_with_windows": false
 }

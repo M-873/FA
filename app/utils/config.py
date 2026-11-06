@@ -25,6 +25,7 @@ class ProjectConfig:
         self.youtube_enabled: bool = True
         self.facebook_enabled: bool = False
         self.instagram_enabled: bool = False
+        self.require_human_approval: bool = True
         self.auto_run_on_start: bool = True
         self.start_with_windows: bool = False
         self.load()
@@ -57,6 +58,7 @@ class ProjectConfig:
             "youtube_enabled": self.youtube_enabled,
             "facebook_enabled": self.facebook_enabled,
             "instagram_enabled": self.instagram_enabled,
+            "require_human_approval": self.require_human_approval,
             "auto_run_on_start": self.auto_run_on_start,
             "start_with_windows": self.start_with_windows,
         }
@@ -117,6 +119,7 @@ class EnvironmentSettings(BaseSettings):
     YOUTUBE_ENABLED: Optional[bool] = Field(default=None, description="Optional override for YouTube Shorts publishing")
     FACEBOOK_ENABLED: Optional[bool] = Field(default=None, description="Optional override for Facebook Reels publishing")
     INSTAGRAM_ENABLED: Optional[bool] = Field(default=None, description="Optional override for Instagram publishing")
+    REQUIRE_HUMAN_APPROVAL: Optional[bool] = Field(default=None, description="Optional override for human approval step")
 
     # Automation Flags
     AUTO_RUN_ON_START: bool = Field(default=True, description="Automatically start job on app launch")
