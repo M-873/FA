@@ -7,6 +7,7 @@ from app.facebook.stories import FacebookStoryPublisher
 from app.hardware.detector import HardwareDetector
 from app.hardware.monitor import HardwareSafetyMonitor
 from app.hardware.profiles import PerformanceProfileManager
+from app.jobs.history import PublishingHistoryManager
 from app.jobs.manager import DailyJobManager
 from app.jobs.state import JobStatus, DailyJobState
 from app.tts.online import CloudTTSProvider
@@ -25,16 +26,31 @@ class DailyCartoonAutomationPipeline:
     Supports partial failure recovery (e.g. retrying failed YouTube upload without re-rendering).
     """
 
-    def __init__(self, job_manager: Optional[DailyJobManager] = None):
+    def __init__(
+        self,
+        job_manager: Optional[DailyJobManager] = None,
+        history_manager: Optional[PublishingHistoryManager] = None,
+    ):
         self.project_cfg = get_project_config()
         self.env_cfg = get_env_settings()
         self.job_mgr = job_manager if job_manager is not None else DailyJobManager()
+        self.history_mgr = history_manager if history_manager is not None else PublishingHistoryManager()
 
     def run_daily_pipeline(self) -> Dict[str, Any]:
         """Executes today's automated video pipeline."""
         logger.info("==============================================================================")
         logger.info("STARTING LIGHTWEIGHT DAILY AUTOMATION PIPELINE")
         logger.info("==============================================================================")
+
+        # Emergency Kill Switch Check
+        kill_switch = (
+            self.env_cfg.KILL_SWITCH
+            if self.env_cfg.KILL_SWITCH is not None
+            else getattr(self.project_cfg, "kill_switch", False)
+        )
+        if kill_switch:
+            logger.warning("[KILL SWITCH] Automation is paused by emergency kill switch. Skipping daily job.")
+            return {"success": False, "reason": "Emergency kill switch active", "job_status": JobStatus.PENDING}
 
         # 1. Hardware Specs & Profile Selection
         detector = HardwareDetector()
@@ -47,6 +63,20 @@ class DailyCartoonAutomationPipeline:
         if job.status == JobStatus.PUBLISHED:
             logger.info(f"[JOB COMPLETED] Today's video ({job.date}) is already PUBLISHED. Doing nothing.")
             return {"success": True, "job_status": JobStatus.PUBLISHED, "reason": "Already published"}
+
+        # Hard Cap Check: verify publishing history database (hard cap of 1 publish per day)
+        history_records = self.history_mgr.get_records_by_date(job.date)
+        published_records = [r for r in history_records if r.get("status") == "PUBLISHED"]
+        if len(published_records) >= 1:
+            logger.warning(
+                f"[HARD CAP] Today ({job.date}) already has {len(published_records)} PUBLISHED record(s) "
+                "in publishing history. Hard cap of 1 publish per day enforced."
+            )
+            return {
+                "success": False,
+                "job_status": JobStatus.PUBLISHED,
+                "reason": "Hard cap reached: 1 publish per day already completed.",
+            }
 
         # Check Partial Failure Recovery
         if job.status == JobStatus.PARTIALLY_PUBLISHED and job.video_path and os.path.exists(job.video_path):
@@ -286,8 +316,21 @@ class DailyCartoonAutomationPipeline:
                 (ig_enabled and ig_success)
             )
 
+        is_publisher_device = (
+            self.env_cfg.PUBLISHER_DEVICE
+            if self.env_cfg.PUBLISHER_DEVICE is not None
+            else getattr(self.project_cfg, "publisher_device", True)
+        )
+        if not is_publisher_device and not self.env_cfg.DRY_RUN:
+            logger.warning(
+                "[PUBLISHER DEVICE CHECK] This machine is not designated as the publisher device "
+                "(publisher_device=False). Forcing DRY_RUN behavior to prevent unauthorized real uploads."
+            )
+
+        effective_dry_run = self.env_cfg.DRY_RUN or not is_publisher_device
+
         if all_enabled_ok:
-            if self.env_cfg.DRY_RUN:
+            if effective_dry_run:
                 job.update_status(JobStatus.DRY_RUN_COMPLETE)
             else:
                 job.update_status(JobStatus.PUBLISHED)
@@ -298,9 +341,7 @@ class DailyCartoonAutomationPipeline:
 
         # Record into local SQLite publishing history
         try:
-            from app.jobs.history import PublishingHistoryManager
-            history_mgr = PublishingHistoryManager()
-            history_mgr.record_publication(
+            self.history_mgr.record_publication(
                 date=job.date,
                 topic=job.topic_title,
                 clip_id=getattr(job, "clip_id", None),
@@ -337,9 +378,28 @@ class DailyCartoonAutomationPipeline:
         """
         Approves today's job currently in AWAITING_APPROVAL state and resumes publishing.
         """
+        # Emergency Kill Switch Check
+        kill_switch = (
+            self.env_cfg.KILL_SWITCH
+            if self.env_cfg.KILL_SWITCH is not None
+            else getattr(self.project_cfg, "kill_switch", False)
+        )
+        if kill_switch:
+            msg = "Cannot approve: Emergency kill switch is active."
+            logger.warning(msg)
+            return {"success": False, "reason": msg}
+
         job = self.job_mgr.get_today_job()
         if not job or job.status != JobStatus.AWAITING_APPROVAL:
             msg = f"Cannot approve: No job in AWAITING_APPROVAL state (current status: {job.status.value if job else 'None'})."
+            logger.warning(msg)
+            return {"success": False, "reason": msg}
+
+        # Hard Cap Check: verify publishing history database as well (max 1 publish per day)
+        history_records = self.history_mgr.get_records_by_date(job.date)
+        published_records = [r for r in history_records if r.get("status") == "PUBLISHED"]
+        if len(published_records) >= 1:
+            msg = f"Cannot approve: Today ({job.date}) already has {len(published_records)} PUBLISHED record(s). Hard cap of 1 publish per day enforced."
             logger.warning(msg)
             return {"success": False, "reason": msg}
 

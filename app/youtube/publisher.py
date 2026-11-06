@@ -55,7 +55,21 @@ class YouTubePublisher:
         """
         logger.info(f"Preparing YouTube Shorts upload for file: {video_path}...")
 
-        if self.env.DRY_RUN:
+        is_publisher = (
+            self.env.PUBLISHER_DEVICE
+            if self.env.PUBLISHER_DEVICE is not None
+            else getattr(self.project_cfg, "publisher_device", True)
+        )
+        if not is_publisher:
+            logger.warning(
+                "[PUBLISHER DEVICE CHECK] This machine is not designated as the publisher device "
+                "(publisher_device=False). Forcing DRY_RUN mode for YouTube upload."
+            )
+            force_dry_run = True
+        else:
+            force_dry_run = self.env.DRY_RUN
+
+        if force_dry_run:
             logger.info("[DRY_RUN MODE] Skipping live YouTube Shorts upload.")
             logger.info(f"[DRY_RUN TITLE] {title} #Shorts")
             logger.info(f"[DRY_RUN PATH] {video_path}")

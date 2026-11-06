@@ -5,6 +5,9 @@ def test_project_config():
     pcfg = get_project_config()
     assert pcfg.video_duration == 12
     assert pcfg.aspect_ratio == "9:16"
+    assert pcfg.scheduled_time == "10:00"
+    assert pcfg.publisher_device is True
+    assert pcfg.kill_switch is False
 
 
 def test_env_settings_sanitizer():

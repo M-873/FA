@@ -31,6 +31,9 @@ class ProjectConfig:
         self.dry_run: bool = True
         self.auto_run_on_start: bool = True
         self.start_with_windows: bool = False
+        self.scheduled_time: str = "10:00"
+        self.publisher_device: bool = True
+        self.kill_switch: bool = False
         self.load()
 
     def load(self):
@@ -67,6 +70,9 @@ class ProjectConfig:
             "dry_run": self.dry_run,
             "auto_run_on_start": self.auto_run_on_start,
             "start_with_windows": self.start_with_windows,
+            "scheduled_time": self.scheduled_time,
+            "publisher_device": self.publisher_device,
+            "kill_switch": self.kill_switch,
         }
         with open(self.config_path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
@@ -126,6 +132,9 @@ class EnvironmentSettings(BaseSettings):
     FACEBOOK_ENABLED: Optional[bool] = Field(default=None, description="Optional override for Facebook Reels publishing")
     INSTAGRAM_ENABLED: Optional[bool] = Field(default=None, description="Optional override for Instagram publishing")
     REQUIRE_HUMAN_APPROVAL: Optional[bool] = Field(default=None, description="Optional override for human approval step")
+    SCHEDULED_TIME: Optional[str] = Field(default=None, description="Configurable daily schedule time HH:MM")
+    PUBLISHER_DEVICE: Optional[bool] = Field(default=None, description="Only PC with true may do real uploads")
+    KILL_SWITCH: Optional[bool] = Field(default=None, description="Emergency kill switch disabling automation")
 
     # Automation Flags
     AUTO_RUN_ON_START: bool = Field(default=True, description="Automatically start job on app launch")
