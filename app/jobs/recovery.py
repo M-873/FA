@@ -116,6 +116,8 @@ class DailyCartoonAutomationPipeline:
                     music_source_url=music_source_url,
                 )
                 final_mp4_path = render_res.video_path
+                job.clip_id = render_res.metadata.get("clip_id")
+                job.provider = render_res.metadata.get("provider")
             except NoClipFoundError as e:
                 logger.error(f"No stock clip found: {e}. Ending job in FAILED state.")
                 job.update_status(JobStatus.FAILED, error=str(e))
@@ -224,11 +226,13 @@ class DailyCartoonAutomationPipeline:
             self.job_mgr.save_job(job)
 
             yt_pub = YouTubeShortsPublisher()
+            privacy = getattr(self.project_cfg, "youtube_privacy", "private")
             yt_res = yt_pub.publish_short(
                 video_path=master_mp4_path,
                 title=title,
                 description=description,
                 hashtags=hashtags,
+                privacy_status=privacy,
             )
 
             if yt_res.get("success"):
@@ -284,6 +288,22 @@ class DailyCartoonAutomationPipeline:
             job.update_status(JobStatus.PARTIALLY_PUBLISHED)
         else:
             job.update_status(JobStatus.FAILED, error="Platform upload failed")
+
+        # Record into local SQLite publishing history
+        try:
+            from app.jobs.history import PublishingHistoryManager
+            history_mgr = PublishingHistoryManager()
+            history_mgr.record_publication(
+                date=job.date,
+                topic=job.topic_title,
+                clip_id=getattr(job, "clip_id", None),
+                provider=getattr(job, "provider", None) or job.content_source,
+                video_id=job.youtube_video_id,
+                status=job.status.value,
+                error=job.error_message,
+            )
+        except Exception as e:
+            logger.warning(f"Could not record publication history to SQLite: {e}")
 
         self.job_mgr.save_job(job)
 

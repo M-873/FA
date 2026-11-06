@@ -23,6 +23,7 @@ class ProjectConfig:
         self.youtube_category_id: str = "24"
         self.gemini_model: str = "gemini-2.0-flash"
         self.content_source: str = "auto"
+        self.youtube_privacy: str = "private"
         self.youtube_enabled: bool = True
         self.facebook_enabled: bool = False
         self.instagram_enabled: bool = False
@@ -58,6 +59,7 @@ class ProjectConfig:
             "youtube_category_id": self.youtube_category_id,
             "gemini_model": self.gemini_model,
             "content_source": self.content_source,
+            "youtube_privacy": self.youtube_privacy,
             "youtube_enabled": self.youtube_enabled,
             "facebook_enabled": self.facebook_enabled,
             "instagram_enabled": self.instagram_enabled,

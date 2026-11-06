@@ -32,6 +32,8 @@ class DailyJobState(BaseModel):
     video_path: Optional[str] = Field(default=None, description="Path to rendered master final.mp4")
     topic_title: Optional[str] = Field(default=None, description="Selected daily topic headline")
     content_source: str = Field(default="cartoon", description="Content source used: cartoon, stock_edit, etc.")
+    clip_id: Optional[str] = Field(default=None, description="Stock clip ID or asset ID")
+    provider: Optional[str] = Field(default=None, description="Stock clip provider (pexels, pixabay, local, cartoon)")
 
     # Facebook Status
     facebook_reel: str = Field(default="PENDING", description="Status: PENDING, SUCCESS, FAILED, SKIPPED")

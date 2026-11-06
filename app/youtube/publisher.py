@@ -76,6 +76,10 @@ class YouTubePublisher:
         cleaned_tags = [t.replace("#", "") for t in tags] + ["Shorts", "Short"]
 
         category = getattr(self.project_cfg, "youtube_category_id", "24")
+        effective_privacy = privacy_status
+        if effective_privacy == "public" and hasattr(self.project_cfg, "youtube_privacy"):
+            effective_privacy = getattr(self.project_cfg, "youtube_privacy", "private")
+        privacy_status = effective_privacy
         return self.publish_video(
             video_path=video_path,
             title=full_title,
