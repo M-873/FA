@@ -97,6 +97,56 @@ class StockEditContentSource(BaseContentSource):
         text = text.replace("%", r"\%")
         return text.strip()
 
+    @classmethod
+    def create_ass_file(
+        cls,
+        ass_path: str,
+        w: int,
+        h: int,
+        duration: float,
+        title_text: str,
+        subtitle_text: str,
+        font_name: str = "Nirmala UI",
+    ) -> str:
+        """
+        Creates an Advanced SubStation Alpha (.ass) subtitle file.
+        Provides native OpenType / HarfBuzz text shaping via libass,
+        rendering Bengali matras, conjuncts, and vowel signs accurately.
+        """
+        title_size = max(24, int(w * 0.048))
+        sub_size = max(20, int(w * 0.036))
+        title_margin_v = int(h * 0.14)
+        sub_margin_v = int(h * 0.18)
+
+        dur_h = int(duration // 3600)
+        dur_m = int((duration % 3600) // 60)
+        dur_s = int(duration % 60)
+        dur_cs = int((duration * 100) % 100)
+        end_ts = f"{dur_h}:{dur_m:02d}:{dur_s:02d}.{dur_cs:02d}"
+
+        # Clean any raw newlines from text
+        title_text = title_text.replace("\n", " ").replace("\r", "").strip()
+        subtitle_text = subtitle_text.replace("\n", " ").replace("\r", "").strip()
+
+        ass_content = f"""[Script Info]
+ScriptType: v4.00+
+PlayResX: {w}
+PlayResY: {h}
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Title,{font_name},{title_size},&H0000FFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,3,1,8,20,20,{title_margin_v},1
+Style: Subtitle,{font_name},{sub_size},&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,2,1,2,20,20,{sub_margin_v},1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.00,{end_ts},Title,,0,0,0,,{title_text}
+Dialogue: 0,0:00:00.00,{end_ts},Subtitle,,0,0,0,,{subtitle_text}
+"""
+        with open(ass_path, "w", encoding="utf-8") as f:
+            f.write(ass_content)
+        return ass_path
+
     def generate_video(
         self,
         topic: Dict[str, Any],
@@ -111,6 +161,7 @@ class StockEditContentSource(BaseContentSource):
     ) -> ContentRenderResult:
         """
         Executes single-pass streaming FFmpeg video composition from stock video.
+        Uses libass for typography to ensure 100% correct Bengali glyph shaping.
         """
         ffmpeg_bin = get_ffmpeg_binary()
         if not ffmpeg_bin:
@@ -147,17 +198,27 @@ class StockEditContentSource(BaseContentSource):
         )
 
         try:
-            # 3. Typography & Bengali Font Setup
+            # 3. Typography & Bengali Font Setup via libass
             w = render_settings.resolution_width
             h = render_settings.resolution_height
             max_duration = min(float(render_settings.max_duration_seconds or 15.0), 15.0)
 
-            font_path = get_bengali_font_path()
-            escaped_font = format_font_path_for_ffmpeg(font_path)
-
-            hook_title = self._sanitize_drawtext(topic.get("topic_title", "প্রযুক্তির বিস্ময়"))
+            hook_title = topic.get("topic_title", "প্রযুক্তির বিস্ময়")
             dialogue_lines = [d.get("text", "") for d in script.get("dialogues", []) if d.get("text")]
-            subtitle_line = self._sanitize_drawtext(dialogue_lines[0] if dialogue_lines else hook_title)
+            subtitle_line = dialogue_lines[0] if dialogue_lines else hook_title
+
+            # Generate ASS subtitle for flawless Bengali text shaping (HarfBuzz)
+            ass_path = temp_mgr.get_path("typography_overlay.ass")
+            self.create_ass_file(
+                ass_path=ass_path,
+                w=w,
+                h=h,
+                duration=max_duration,
+                title_text=hook_title,
+                subtitle_text=subtitle_line,
+                font_name="Nirmala UI",
+            )
+            escaped_ass = ass_path.replace("\\", "/").replace(":", r"\:")
 
             # 4. Construct Single-Pass Streaming FFmpeg Command
             os.makedirs(os.path.dirname(output_mp4_path) or ".", exist_ok=True)
@@ -177,20 +238,8 @@ class StockEditContentSource(BaseContentSource):
                 cmd.extend(["-i", music_path])
 
             # Video Filtergraph
-            # Scale & 9:16 Crop
-            vf_parts = [f"scale={w}:{h}:force_original_aspect_ratio=increase,crop={w}:{h},setsar=1"]
-
-            # Hook Title drawtext
-            font_opt = f":fontfile='{escaped_font}'" if escaped_font else ""
-            vf_parts.append(
-                f"drawtext=text='{hook_title}'{font_opt}:fontcolor=yellow:fontsize=36:x=(w-text_w)/2:y=180:box=1:boxcolor=black@0.65:boxborderw=8"
-            )
-            # Dialogue Subtitle drawtext
-            vf_parts.append(
-                f"drawtext=text='{subtitle_line}'{font_opt}:fontcolor=white:fontsize=28:x=(w-text_w)/2:y=h-260:box=1:boxcolor=black@0.65:boxborderw=8"
-            )
-
-            vf_string = ",".join(vf_parts)
+            # Scale & 9:16 Crop, then apply ASS overlay
+            vf_string = f"scale={w}:{h}:force_original_aspect_ratio=increase,crop={w}:{h},setsar=1,ass='{escaped_ass}'"
 
             # Audio Mixing Filtergraph
             if has_tts and has_music:
