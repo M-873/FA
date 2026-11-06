@@ -28,10 +28,16 @@ def main():
 
     args = parser.parse_args()
     env_cfg = get_env_settings()
+    project_cfg = get_project_config()
 
     if args.dry_run:
         env_cfg.DRY_RUN = True
+        os.environ["DRY_RUN"] = "true"
         logger.info("DRY_RUN mode enabled.")
+    elif not getattr(project_cfg, "dry_run", True) and "DRY_RUN" not in os.environ:
+        env_cfg.DRY_RUN = False
+        os.environ["DRY_RUN"] = "false"
+        logger.info("DRY_RUN disabled via project_config.json.")
 
     if args.content_source:
         env_cfg.CONTENT_SOURCE_OVERRIDE = args.content_source
