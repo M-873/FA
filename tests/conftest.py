@@ -43,6 +43,20 @@ def isolate_music_history_file(tmp_path, monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def isolate_publishing_history_db(tmp_path, monkeypatch):
+    """
+    Ensures tests never touch or pollute output/publishing_history.db.
+    Points PublishingHistoryManager default path to an isolated temp database.
+    """
+    from app.jobs.history import PublishingHistoryManager
+    temp_db = str(tmp_path / "temp_publishing_history.db")
+    orig_init = PublishingHistoryManager.__init__
+    def _mock_init(self, db_path=temp_db):
+        orig_init(self, db_path=db_path)
+    monkeypatch.setattr(PublishingHistoryManager, "__init__", _mock_init)
+
+
+@pytest.fixture(autouse=True)
 def block_network_calls(monkeypatch):
     """
     Global fixture blocking real HTTP network calls during test execution.
