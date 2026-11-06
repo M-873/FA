@@ -27,6 +27,7 @@ class ProjectConfig:
         self.facebook_enabled: bool = False
         self.instagram_enabled: bool = False
         self.require_human_approval: bool = True
+        self.dry_run: bool = True
         self.auto_run_on_start: bool = True
         self.start_with_windows: bool = False
         self.load()
@@ -61,6 +62,7 @@ class ProjectConfig:
             "facebook_enabled": self.facebook_enabled,
             "instagram_enabled": self.instagram_enabled,
             "require_human_approval": self.require_human_approval,
+            "dry_run": self.dry_run,
             "auto_run_on_start": self.auto_run_on_start,
             "start_with_windows": self.start_with_windows,
         }
