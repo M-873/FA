@@ -21,6 +21,7 @@ class ProjectConfig:
         self.music_style: str = "upbeat_lofi_playful"
         self.default_hashtags: List[str] = ["#AICartoon", "#TechShorts", "#Reels", "#Shorts"]
         self.youtube_category_id: str = "24"
+        self.gemini_model: str = "gemini-2.0-flash"
         self.content_source: str = "auto"
         self.youtube_enabled: bool = True
         self.facebook_enabled: bool = False
@@ -54,6 +55,7 @@ class ProjectConfig:
             "music_style": self.music_style,
             "default_hashtags": self.default_hashtags,
             "youtube_category_id": self.youtube_category_id,
+            "gemini_model": self.gemini_model,
             "content_source": self.content_source,
             "youtube_enabled": self.youtube_enabled,
             "facebook_enabled": self.facebook_enabled,
@@ -78,7 +80,7 @@ class EnvironmentSettings(BaseSettings):
 
     # Primary AI: Gemini
     GEMINI_API_KEY: str = Field(default="", description="Google Gemini API Key")
-    GEMINI_MODEL: str = Field(default="gemini-1.5-flash", description="Gemini Text Model")
+    GEMINI_MODEL: str = Field(default="gemini-2.0-flash", description="Gemini Text Model")
 
     # Optional AI: OpenAI
     OPENAI_ENABLED: bool = Field(default=False, description="Enable OpenAI fallback")

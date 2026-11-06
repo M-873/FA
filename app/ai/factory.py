@@ -4,6 +4,7 @@ from app.ai.gemini import GeminiCartoonAIProvider
 from app.ai.ollama_manager import OllamaHardwareManager
 from app.ai.ollama_provider import OllamaCartoonAIProvider
 from app.hardware.detector import HardwareSpecs
+from app.utils.config import get_env_settings, get_project_config
 from app.utils.logging import logger
 
 
@@ -13,11 +14,12 @@ class AIProviderFactory:
     Automatically provisions and selects the appropriate Ollama model based on GPU tier:
     - RTX 4060 / 5060 / 3060 (6GB+ VRAM) -> 'llama3.2:3b'
     - MX110 / GTX 1050 (2GB VRAM)        -> 'qwen2.5:0.5b' / 'llama3.2:1b'
-    Falls back seamlessly to Google Gemini 2.0 Flash (Free API) if Ollama is installing or unavailable.
+    Falls back seamlessly to Google Gemini API if Ollama is installing or unavailable.
     """
 
     @classmethod
     def get_provider(cls, specs: Optional[HardwareSpecs] = None) -> BaseAIProvider:
+        gemini_model = getattr(get_project_config(), "gemini_model", None) or get_env_settings().GEMINI_MODEL
         if specs and OllamaHardwareManager.is_hardware_compatible(specs):
             target_model = OllamaHardwareManager.get_optimal_model_for_hardware(specs)
             logger.info(f"Targeting Ollama model for hardware: {target_model}")
@@ -28,9 +30,9 @@ class AIProviderFactory:
                     logger.info(f"Local Ollama AI provider activated with model '{target_model}'.")
                     return OllamaCartoonAIProvider(model=target_model)
                 else:
-                    logger.info("Ollama model pull in progress or deferred. Using Google Gemini 2.0 Flash.")
+                    logger.info(f"Ollama model pull in progress or deferred. Using Google Gemini ({gemini_model}).")
             else:
-                logger.info("Ollama background service not ready yet. Using Google Gemini 2.0 Flash.")
+                logger.info(f"Ollama background service not ready yet. Using Google Gemini ({gemini_model}).")
 
-        # Default to Cloud Gemini AI (Free & Fast)
+        # Default to Cloud Gemini AI
         return GeminiCartoonAIProvider()

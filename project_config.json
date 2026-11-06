@@ -22,6 +22,7 @@
     "#Shorts"
   ],
   "youtube_category_id": "24",
+  "gemini_model": "gemini-2.0-flash",
   "content_source": "auto",
   "youtube_enabled": true,
   "facebook_enabled": false,

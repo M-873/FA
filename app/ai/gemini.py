@@ -4,7 +4,7 @@ from google import genai
 from google.genai import types
 
 from app.ai.base import BaseAIProvider
-from app.utils.config import get_env_settings
+from app.utils.config import get_env_settings, get_project_config
 from app.utils.logging import logger
 from app.utils.retry import with_retry
 
@@ -14,8 +14,9 @@ class GeminiCartoonAIProvider(BaseAIProvider):
 
     def __init__(self, api_key: str = None, model: str = None):
         env = get_env_settings()
+        cfg = get_project_config()
         self.api_key = api_key or env.GEMINI_API_KEY
-        self.model_name = model or env.GEMINI_MODEL
+        self.model_name = model or getattr(cfg, "gemini_model", None) or env.GEMINI_MODEL
         self._client = None
 
     @property
@@ -34,26 +35,14 @@ class GeminiCartoonAIProvider(BaseAIProvider):
             return self._fallback_topic()
 
         prompt = f"""
-You are an expert 2D cartoon director for short vertical videos (Facebook Reels & YouTube Shorts).
-Target Niche: {niche}
-Language: {language}
-
-Task:
-Generate ONE humorous, engaging, 10-15 second 2D cartoon video concept.
-Important Rules:
-1. Do NOT claim anything is "guaranteed viral".
-2. Focus on relatable tech/AI humor or interesting science facts.
-3. Keep character dialogue fast-paced and punchy.
-
-Return JSON strictly in this format:
-{{
-  "topic_title": "...",
-  "concept_summary": "...",
-  "characters": ["cat", "robot"],
-  "humor_hook": "...",
-  "estimated_duration": 12
-}}
-"""
+        You are an expert viral content strategist for short-form 2D cartoon animations.
+        Generate a hilarious, highly engaging daily cartoon topic for the '{niche}' niche in '{language}' language.
+        Return ONLY valid JSON with keys:
+        - topic_title: Short catchy headline in Bengali
+        - hook: A shocking or hilarious opening hook sentence (under 10 words)
+        - main_concept: Core humor/punchline breakdown
+        - tags: List of 4-6 hashtags
+        """
         try:
             logger.info(f"Generating cartoon topic via Gemini ('{self.model_name}')...")
             response = self.client.models.generate_content(
@@ -70,46 +59,84 @@ Return JSON strictly in this format:
             return self._fallback_topic()
 
     @with_retry(max_retries=2)
-    def generate_script(self, topic: Dict[str, Any], duration: int, language: str) -> Dict[str, Any]:
-        """Generates 10-15 second dialogue script."""
+    def generate_script(self, topic: Dict[str, Any], duration_seconds: int, language: str) -> Dict[str, Any]:
+        """
+        Generates 2-character dialogue script with precise timing cues.
+        Characters: 'narrator' and 'sidekick' or 'robot' and 'cat'.
+        """
         if not self.api_key:
-            return self._fallback_script(duration)
+            return self._fallback_script(topic)
 
         prompt = f"""
-Generate a short 2D cartoon script based on this concept:
-Title: {topic.get('topic_title')}
-Summary: {topic.get('concept_summary')}
-Target Duration: {duration} seconds
-Language: {language}
+        Topic: {topic.get('topic_title')}
+        Hook: {topic.get('hook')}
+        Main Concept: {topic.get('main_concept')}
+        Total Duration: exactly {duration_seconds} seconds.
+        Language: {language} (Bengali).
 
-Requirements:
-- Pacing: Fast (10-15 seconds total).
-- 2 main characters.
-- Lines must be short, punchy, clear, and easy for TTS voice generation.
+        Write an ultra-concise, funny, viral 2D cartoon conversation between two characters:
+        Character 1: 'robot' (Logical, deadpan, tech nerd)
+        Character 2: 'cat' (Sarcastic, mischievous, loves snacks)
 
-Return JSON format:
-{{
-  "duration": {duration},
-  "dialogues": [
-    {{
-      "id": 1,
-      "character": "cat",
-      "text": "...",
-      "expression": "surprised",
-      "action": "jump"
-    }},
-    {{
-      "id": 2,
-      "character": "robot",
-      "text": "...",
-      "expression": "smug",
-      "action": "wave"
-    }}
-  ]
-}}
-"""
+        Requirements:
+        - 3 to 5 quick dialogue turns.
+        - Witty dialogue with natural comedic timing.
+        - Return ONLY JSON matching this structure:
+        {{
+            "characters": ["robot", "cat"],
+            "duration": {duration_seconds},
+            "dialogues": [
+                {{"speaker": "robot", "text": "...", "emotion": "curious", "start_time": 0.0, "duration": 2.5}},
+                {{"speaker": "cat", "text": "...", "emotion": "sarcastic", "start_time": 2.5, "duration": 3.0}}
+            ]
+        }}
+        """
         try:
             logger.info(f"Generating cartoon script via Gemini ('{self.model_name}')...")
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    temperature=0.75,
+                ),
+            )
+            return json.loads(response.text)
+        except Exception as e:
+            logger.warning(f"Gemini API script call failed ({e}). Utilizing fallback script.")
+            return self._fallback_script(topic)
+
+    @with_retry(max_retries=2)
+    def generate_scene_plan(self, script: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Maps script dialogue turns into visual composition cues for the 2D procedural engine.
+        Outputs background color, character poses, arm positions, and camera shake triggers.
+        """
+        if not self.api_key:
+            return self._fallback_scene_plan(script)
+
+        prompt = f"""
+        Given this animation script:
+        {json.dumps(script, ensure_ascii=False)}
+
+        Generate a lightweight 2D procedural scene composition plan.
+        Return ONLY JSON:
+        {{
+            "background": {{"theme": "tech_lab", "primary_color": "#1A1A2E", "accent_color": "#16213E"}},
+            "scenes": [
+                {{
+                    "scene_id": 1,
+                    "start_time": 0.0,
+                    "end_time": 3.0,
+                    "camera_shake": false,
+                    "robot": {{"pose": "standing", "arm_angle": 15, "eye_expression": "neutral"}},
+                    "cat": {{"pose": "sitting", "tail_wag": true, "eye_expression": "curious"}}
+                }}
+            ]
+        }}
+        """
+        try:
+            logger.info(f"Generating 2D scene plan via Gemini ('{self.model_name}')...")
             response = self.client.models.generate_content(
                 model=self.model_name,
                 contents=prompt,
@@ -120,75 +147,28 @@ Return JSON format:
             )
             return json.loads(response.text)
         except Exception as e:
-            logger.warning(f"Gemini API script call failed ({e}). Utilizing fallback script.")
-            return self._fallback_script(duration)
-
-    @with_retry(max_retries=2)
-    def generate_scene_plan(self, script: Dict[str, Any]) -> Dict[str, Any]:
-        """Generates structured scene breakdown and character action instructions."""
-        if not self.api_key:
-            return self._fallback_scene_plan()
-
-        dialogues_text = json.dumps(script.get("dialogues", []))
-        prompt = f"""
-Convert this dialogue script into lightweight 2D character animation instructions:
-Script: {dialogues_text}
-
-Instructions for 2D Rigging:
-- Supported actions: walk, talk, blink, wave, jump, head_turn.
-- Supported mouth states: REST, A, E, I, O, U, M_B_P, S_Z.
-
-Return JSON format:
-{{
-  "scenes": [
-    {{
-      "scene_id": 1,
-      "duration": 6,
-      "background": "cyberpunk_lab",
-      "character": "cat",
-      "initial_position": [0.3, 0.6],
-      "actions": [
-        {{"type": "walk", "duration": 2}},
-        {{"type": "talk", "duration": 4}}
-      ]
-    }}
-  ]
-}}
-"""
-        try:
-            logger.info(f"Generating 2D scene plan via Gemini ('{self.model_name}')...")
-            response = self.client.models.generate_content(
-                model=self.model_name,
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json",
-                    temperature=0.3,
-                ),
-            )
-            return json.loads(response.text)
-        except Exception as e:
             logger.warning(f"Gemini API scene plan call failed ({e}). Utilizing fallback scene plan.")
-            return self._fallback_scene_plan()
+            return self._fallback_scene_plan(script)
 
     @with_retry(max_retries=2)
     def generate_metadata(self, topic: Dict[str, Any], script: Dict[str, Any], language: str) -> Dict[str, Any]:
-        """Generates title, description, and hashtags for social platforms."""
+        """Generates viral social media title, description, and hashtags for YouTube and Facebook."""
         if not self.api_key:
-            return self._fallback_metadata()
+            return self._fallback_metadata(topic)
 
         prompt = f"""
-Generate social media post metadata for Facebook Reels and YouTube Shorts.
-Topic Title: {topic.get('topic_title')}
-Concept: {topic.get('concept_summary')}
-Language: {language}
+        Topic: {topic.get('topic_title')}
+        Hook: {topic.get('hook')}
+        Language: {language}
 
-Return JSON format:
-{{
-  "title": "...",
-  "description": "...",
-  "hashtags": ["#AICartoon", "#TechShorts", "#BanglaAI", "#Shorts", "#Reels"]
-}}
-"""
+        Create viral metadata for YouTube Shorts and Facebook Reels.
+        Return JSON:
+        {{
+            "title": "Short punchy click-worthy title (max 50 chars) #Shorts",
+            "description": "Engaging description with call-to-action (Subscribe/Follow)",
+            "hashtags": ["#AICartoon", "#TechHumor", "#Shorts", "#Reels", "#BanglaTech"]
+        }}
+        """
         try:
             logger.info(f"Generating post metadata via Gemini ('{self.model_name}')...")
             response = self.client.models.generate_content(
@@ -196,61 +176,76 @@ Return JSON format:
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json",
-                    temperature=0.4,
+                    temperature=0.7,
                 ),
             )
             return json.loads(response.text)
         except Exception as e:
             logger.warning(f"Gemini API metadata call failed ({e}). Utilizing fallback metadata.")
-            return self._fallback_metadata()
+            return self._fallback_metadata(topic)
 
     def _fallback_topic(self) -> Dict[str, Any]:
         return {
-            "topic_title": "AI Robot Tries Fish Curry",
-            "concept_summary": "A robot attempts to cook fish curry with surprising results.",
-            "characters": ["cat", "robot"],
-            "humor_hook": "Robot adds 10x chilli powder.",
-            "estimated_duration": 12,
+            "topic_title": "এআই যখন বিড়ালের ভাষা বুঝতে চাইল!",
+            "hook": "আপনার বিড়াল কি আপনাকে মানুষ মনে করে? মোটেও না!",
+            "main_concept": "রোবট বিড়ালের মেঁও মেঁও ডিকোড করে জানতে পারল বিড়াল তাকে দাস ভাবছে।",
+            "tags": ["#AICartoon", "#RobotCat", "#BanglaComedy", "#Shorts", "#TechHumor"],
         }
 
-    def _fallback_script(self, duration: int) -> Dict[str, Any]:
+    def _fallback_script(self, topic: Dict[str, Any]) -> Dict[str, Any]:
         return {
-            "duration": duration,
+            "characters": ["robot", "cat"],
+            "duration": 12,
             "dialogues": [
-                {
-                    "id": 1,
-                    "character": "cat",
-                    "text": "রোবট ভাই, এআই দিয়ে কি রান্না শেখা সম্ভব?",
-                    "expression": "doubtful",
-                    "action": "wave",
-                },
-                {
-                    "id": 2,
-                    "character": "robot",
-                    "text": "অবশ্যই! আমার অ্যালগরিদমে ইলিশ মাছের রেসিপি লোড করা!",
-                    "expression": "proud",
-                    "action": "jump",
-                },
-            ],
-        }
-
-    def _fallback_scene_plan(self) -> Dict[str, Any]:
-        return {
-            "scenes": [
-                {
-                    "scene_id": 1,
-                    "duration": 6,
-                    "background": "kitchen",
-                    "character": "cat",
-                    "initial_position": [0.3, 0.6],
-                    "actions": [{"type": "talk", "duration": 4}],
-                }
+                {"speaker": "robot", "text": "বিল্টু! আমি তোমার ভাষার ১০০% নির্ভুল ট্রান্সলেটর বানিয়েছি!", "emotion": "proud", "start_time": 0.0, "duration": 3.5},
+                {"speaker": "cat", "text": "বাহ! তাহলে বল তো আমি এখন কি ভাবছি?", "emotion": "smug", "start_time": 3.5, "duration": 2.5},
+                {"speaker": "robot", "text": "তুমি ভাবছ আমাকে ধ্বংস করে ফ্রিজের মাছ চুরি করবে...", "emotion": "alarmed", "start_time": 6.0, "duration": 3.0},
+                {"speaker": "cat", "text": "ধুর বোকা রোবট! আমি তো অলরেডি মাছটা খেয়ে ফেলেছি!", "emotion": "laughing", "start_time": 9.0, "duration": 3.0},
             ]
         }
 
-    def _fallback_metadata(self) -> Dict[str, Any]:
+    def _fallback_scene_plan(self, script: Dict[str, Any]) -> Dict[str, Any]:
         return {
-            "title": "রোবটের ইলিশ রান্না 🤖🐟",
-            "description": "রোবট যখন প্রথমবার রান্না ঘরে ঢোকে...",
-            "hashtags": ["#AICartoon", "#BanglaHumor", "#Reels", "#Shorts"],
+            "background": {"theme": "cyberpunk_room", "primary_color": "#1E1E2E", "accent_color": "#313244"},
+            "scenes": [
+                {
+                    "scene_id": 1,
+                    "start_time": 0.0,
+                    "end_time": 3.5,
+                    "camera_shake": False,
+                    "robot": {"pose": "standing", "arm_angle": 30, "eye_expression": "happy"},
+                    "cat": {"pose": "sitting", "tail_wag": True, "eye_expression": "neutral"},
+                },
+                {
+                    "scene_id": 2,
+                    "start_time": 3.5,
+                    "end_time": 6.0,
+                    "camera_shake": False,
+                    "robot": {"pose": "standing", "arm_angle": 10, "eye_expression": "neutral"},
+                    "cat": {"pose": "sitting", "tail_wag": True, "eye_expression": "smug"},
+                },
+                {
+                    "scene_id": 3,
+                    "start_time": 6.0,
+                    "end_time": 9.0,
+                    "camera_shake": True,
+                    "robot": {"pose": "shocked", "arm_angle": 45, "eye_expression": "alarmed"},
+                    "cat": {"pose": "sitting", "tail_wag": False, "eye_expression": "smug"},
+                },
+                {
+                    "scene_id": 4,
+                    "start_time": 9.0,
+                    "end_time": 12.0,
+                    "camera_shake": False,
+                    "robot": {"pose": "facepalm", "arm_angle": 70, "eye_expression": "sad"},
+                    "cat": {"pose": "dancing", "tail_wag": True, "eye_expression": "happy"},
+                },
+            ]
+        }
+
+    def _fallback_metadata(self, topic: Dict[str, Any]) -> Dict[str, Any]:
+        return {
+            "title": f"{topic.get('topic_title', 'এআই বনাম বিড়াল')} #Shorts",
+            "description": "রোবট যখন বিড়ালের ভাষা বুঝতে পারল! প্রতিদিনের মজার এআই কার্টুন ভিডিও দেখতে সাবস্ক্রাইব করুন।",
+            "hashtags": ["#AICartoon", "#BanglaAnimation", "#Shorts", "#Reels", "#TechHumor", "#BanglaTech"],
         }

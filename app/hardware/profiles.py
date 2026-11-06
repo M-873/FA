@@ -78,7 +78,9 @@ class HardwareProfileManager:
             return RenderSettings(resolution_width=720, resolution_height=1280, fps=24, codec_preset="ultrafast", crf=28)
         elif prof_upper == "MEDIUM":
             return RenderSettings(resolution_width=1080, resolution_height=1920, fps=30, codec_preset="medium", crf=23)
-        else:  # HIGH, ULTRA
+        elif prof_upper == "HIGH":
+            return RenderSettings(resolution_width=1080, resolution_height=1920, fps=30, codec_preset="fast", crf=20)
+        else:  # ULTRA
             return RenderSettings(resolution_width=1080, resolution_height=1920, fps=60, codec_preset="fast", crf=20)
 
     @classmethod
@@ -288,4 +290,3 @@ class HardwareProfileManager:
 
 # Backward compatibility alias
 PerformanceProfileManager = HardwareProfileManager
-

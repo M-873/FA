@@ -36,7 +36,7 @@ def test_profile_classification_high():
     assert res["profile"] == PerformanceProfileLevel.HIGH.value
     assert res["render_settings"].resolution_width == 1080
     assert res["render_settings"].resolution_height == 1920
-    assert res["render_settings"].fps == 60
+    assert res["render_settings"].fps == 30
     assert res["render_settings"].crf == 20
 
 
@@ -128,4 +128,4 @@ def test_manual_profile_override_in_settings(tmp_path):
     mgr.set_hardware_profile_override("high")
     high_res = HardwareProfileManager.determine_profile(specs, override_profile=mgr.get_hardware_profile_override())
     assert high_res.profile == "HIGH"
-    assert high_res.render_settings.fps == 60
+    assert high_res.render_settings.fps == 30
