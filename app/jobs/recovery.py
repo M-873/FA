@@ -116,8 +116,15 @@ class DailyCartoonAutomationPipeline:
                     music_source_url=music_source_url,
                 )
                 final_mp4_path = render_res.video_path
-                job.clip_id = render_res.metadata.get("clip_id")
-                job.provider = render_res.metadata.get("provider")
+                meta = getattr(render_res, "metadata", None)
+                if isinstance(meta, dict):
+                    cid = meta.get("clip_id")
+                    prov = meta.get("provider")
+                    job.clip_id = str(cid) if (cid is not None and not isinstance(cid, (dict, list))) else None
+                    job.provider = str(prov) if (prov is not None and not isinstance(prov, (dict, list))) else None
+                else:
+                    job.clip_id = None
+                    job.provider = None
             except NoClipFoundError as e:
                 logger.error(f"No stock clip found: {e}. Ending job in FAILED state.")
                 job.update_status(JobStatus.FAILED, error=str(e))
