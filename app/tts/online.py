@@ -4,6 +4,7 @@ import httpx
 from app.tts.base import BaseTTSProvider
 from app.utils.config import get_env_settings
 from app.utils.logging import logger
+from app.video.ffmpeg_helper import get_ffmpeg_binary
 
 
 class CloudTTSProvider(BaseTTSProvider):
@@ -35,9 +36,14 @@ class CloudTTSProvider(BaseTTSProvider):
 
     def _generate_fallback_audio(self, output_path: str, duration: int = 6) -> str:
         """Generates fallback silent/sine audio file using FFmpeg."""
+        ffmpeg_bin = get_ffmpeg_binary()
+        if not ffmpeg_bin:
+            with open(output_path, "wb") as f:
+                f.write(b"MOCK_TTS_AUDIO_CONTENT")
+            return output_path
         try:
             cmd = [
-                "ffmpeg", "-y",
+                ffmpeg_bin, "-y",
                 "-f", "lavfi",
                 "-i", f"sine=frequency=440:duration={duration}",
                 "-c:a", "aac",

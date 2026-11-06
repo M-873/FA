@@ -4,6 +4,7 @@ import subprocess
 from typing import Optional
 from app.hardware.profiles import RenderSettings
 from app.utils.logging import logger
+from app.video.ffmpeg_helper import get_ffmpeg_binary
 
 
 class CartoonMasterRenderer:
@@ -14,13 +15,7 @@ class CartoonMasterRenderer:
 
     def __init__(self, render_settings: RenderSettings):
         self.settings = render_settings
-        self.ffmpeg_cmd = shutil.which("ffmpeg")
-        if not self.ffmpeg_cmd:
-            try:
-                import imageio_ffmpeg
-                self.ffmpeg_cmd = imageio_ffmpeg.get_ffmpeg_exe()
-            except Exception:
-                self.ffmpeg_cmd = "ffmpeg"
+        self.ffmpeg_cmd = get_ffmpeg_binary() or "ffmpeg"
 
     def render_master_mp4(
         self,

@@ -4,6 +4,7 @@ import subprocess
 from typing import Optional
 from app.utils.config import get_env_settings
 from app.utils.logging import logger
+from app.video.ffmpeg_helper import get_ffmpeg_binary, is_ffmpeg_available
 
 
 class FFmpegProcessor:
@@ -13,16 +14,11 @@ class FFmpegProcessor:
         env = get_env_settings()
         self.min_duration = 3
         self.max_duration = 15
-        self.ffmpeg_cmd = shutil.which("ffmpeg") or "ffmpeg"
-
+        self.ffmpeg_cmd = get_ffmpeg_binary() or "ffmpeg"
 
     def is_ffmpeg_available(self) -> bool:
-        """Checks if FFmpeg executable is present in PATH."""
-        try:
-            res = subprocess.run([self.ffmpeg_cmd, "-version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            return res.returncode == 0
-        except Exception:
-            return False
+        """Checks if FFmpeg executable is present and functional."""
+        return is_ffmpeg_available()
 
     def process_video_for_reel(
         self,

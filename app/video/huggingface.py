@@ -5,6 +5,7 @@ from huggingface_hub import InferenceClient
 
 from app.utils.config import get_env_settings
 from app.utils.logging import logger
+from app.video.ffmpeg_helper import get_ffmpeg_binary
 from app.utils.retry import with_retry
 
 
@@ -54,11 +55,16 @@ class HuggingFaceVideoGenerator:
 
     def _create_placeholder_video(self, output_path: str) -> str:
         """Creates a mock/synthetic video file for dry run mode or when HF token is missing."""
-        # Create a simple synthetic video file using OpenCV/Pillow if available, or write a dummy file structure
+        ffmpeg_bin = get_ffmpeg_binary()
+        if not ffmpeg_bin:
+            with open(output_path, "wb") as f:
+                f.write(b"MOCK_MP4_HEADER_AI_VIDEO_CONTENT")
+            logger.info(f"Generated fallback raw placeholder file at {output_path}")
+            return output_path
         try:
             import subprocess
             cmd = [
-                "ffmpeg",
+                ffmpeg_bin,
                 "-y",
                 "-f", "lavfi",
                 "-i", "color=c=0x121826:s=1080x1920:d=5",
