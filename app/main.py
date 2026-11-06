@@ -1,4 +1,5 @@
 import argparse
+import os
 import sys
 from app.jobs.manager import DailyJobManager
 from app.jobs.recovery import DailyCartoonAutomationPipeline
@@ -20,6 +21,7 @@ def main():
     parser.add_argument("--gui", action="store_true", help="Launch Windows Tkinter GUI mode")
     parser.add_argument("--reset-job", action="store_true", help="Reset today's job state to PENDING")
     parser.add_argument("--dry-run", action="store_true", help="Enable dry run mode (do not upload)")
+    parser.add_argument("--content-source", type=str, default=None, help="Override content source (e.g. stock_edit, cartoon)")
     parser.add_argument("--approve", action="store_true", help="Approve today's rendered video and resume publishing")
     parser.add_argument("--reject", action="store_true", help="Reject today's rendered video and reset state")
     parser.add_argument("--regenerate", action="store_true", help="Reject today's rendered video and regenerate immediately")
@@ -30,6 +32,11 @@ def main():
     if args.dry_run:
         env_cfg.DRY_RUN = True
         logger.info("DRY_RUN mode enabled.")
+
+    if args.content_source:
+        env_cfg.CONTENT_SOURCE_OVERRIDE = args.content_source
+        os.environ["CONTENT_SOURCE_OVERRIDE"] = args.content_source
+        logger.info(f"Content source overridden to '{args.content_source}'.")
 
     if args.reset_job:
         job_mgr = DailyJobManager()
