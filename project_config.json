@@ -23,7 +23,7 @@
   ],
   "youtube_category_id": "24",
   "gemini_model": "gemini-2.0-flash",
-  "content_source": "auto",
+  "content_source": "stock_edit",
   "youtube_privacy": "private",
   "youtube_enabled": true,
   "facebook_enabled": false,
