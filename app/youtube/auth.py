@@ -152,12 +152,15 @@ class YouTubeAuthManager:
             target_handle_norm = TARGET_CHANNEL_HANDLE.strip().lower()
             title_norm = (title or "").strip().lower()
             target_title_norm = TARGET_CHANNEL_TITLE.strip().lower()
+            target_id = getattr(self.project_cfg, "youtube_channel_id", "").strip()
 
             is_match = (
                 handle_norm == target_handle_norm
+                or handle_norm.lstrip("@") == target_handle_norm.lstrip("@")
                 or title_norm == target_title_norm
                 or target_title_norm in handle_norm
                 or target_title_norm in title_norm
+                or (bool(target_id) and channel_id == target_id)
             )
 
             result = {
@@ -179,6 +182,66 @@ class YouTubeAuthManager:
         except Exception as e:
             logger.error(f"Failed to verify YouTube channel: {e}")
             return {"verified": False, "reason": str(e), "channel_id": None, "channel_title": None}
+
+    @classmethod
+    def _run_local_server_robust(
+        cls,
+        flow: Any,
+        port: int = 8088,
+        host: str = "localhost",
+        browser: Optional[str] = None,
+    ) -> Any:
+        """
+        Runs local WSGI server for OAuth redirect.
+        Robust against browser reload or state mismatch by extracting
+        authorization code directly from response URI.
+        """
+        import wsgiref.simple_server
+        from urllib.parse import urlparse, parse_qs
+        from google_auth_oauthlib.flow import _RedirectWSGIApp, _WSGIRequestHandler
+
+        success_message = "Authorization successful! You may now close this browser window and return to FA."
+        wsgi_app = _RedirectWSGIApp(success_message)
+        wsgiref.simple_server.WSGIServer.allow_reuse_address = True
+        local_server = wsgiref.simple_server.make_server(
+            host, port, wsgi_app, handler_class=_WSGIRequestHandler
+        )
+
+        try:
+            flow.redirect_uri = f"http://{host}:{local_server.server_port}/"
+            auth_url, _ = flow.authorization_url(prompt="consent", access_type="offline")
+
+            msg = f"\nPlease authorize the application in your browser window:\n{auth_url}\n"
+            logger.info(msg)
+            print(msg, flush=True)
+
+            try:
+                webbrowser.get(browser).open(auth_url, new=1, autoraise=True)
+            except Exception:
+                webbrowser.open(auth_url, new=1, autoraise=True)
+
+            while True:
+                local_server.handle_request()
+                last_uri = getattr(wsgi_app, "last_request_uri", "") or ""
+                if "code=" in last_uri or "error=" in last_uri:
+                    break
+
+            parsed = urlparse(last_uri)
+            params = parse_qs(parsed.query)
+            err = params.get("error", [None])[0]
+            if err:
+                raise RuntimeError(f"Google OAuth returned error: {err}")
+
+            code = params.get("code", [None])[0]
+            if code:
+                # Direct code exchange avoids fragile CSRF state mismatch when user reloads/switches tabs
+                flow.fetch_token(code=code)
+            else:
+                flow.fetch_token(authorization_response=last_uri.replace("http", "https"))
+
+            return flow.credentials
+        finally:
+            local_server.server_close()
 
     # -------------------------------------------------------------------------
     # Interactive Browser Authentication Flow (PKCE)
@@ -220,7 +283,7 @@ class YouTubeAuthManager:
         print("🎬 LAUNCHING GOOGLE YOUTUBE OAUTH 2.0 AUTHENTICATION")
         print(f"Target YouTube Channel: {TARGET_CHANNEL_TITLE} ({TARGET_CHANNEL_HANDLE})")
         print("Opening your default web browser for Google Account consent...")
-        print("=================================================================\n")
+        print("=================================================================\n", flush=True)
 
         # Ensure Chrome is registered if present
         chrome_exe = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
@@ -233,12 +296,10 @@ class YouTubeAuthManager:
                 pass
 
         try:
-            # run_local_server spawns local loopback receiver and opens Chrome directly
-            creds = flow.run_local_server(
+            creds = self._run_local_server_robust(
+                flow=flow,
                 port=port,
-                prompt="consent",
                 browser=browser_name,
-                authorization_prompt_message="Please authorize the application in your browser window: {url}",
             )
 
             from googleapiclient.discovery import build
@@ -364,6 +425,7 @@ def main():
     parser.add_argument("--disconnect", action="store_true", help="Disconnect YouTube and purge stored credentials")
     parser.add_argument("--open-console", action="store_true", help="Open Google Cloud Console YouTube API in browser")
     parser.add_argument("--client-secret", default="client_secret.json", help="Path to Google client_secret.json")
+    parser.add_argument("--port", type=int, default=8088, help="Local loopback port for OAuth redirect (default: 8088)")
 
     args = parser.parse_args()
     auth_mgr = YouTubeAuthManager()
@@ -394,7 +456,7 @@ def main():
         return
 
     # Default or --login
-    res = auth_mgr.authenticate_interactive(args.client_secret)
+    res = auth_mgr.authenticate_interactive(args.client_secret, port=args.port)
     if res.get("success"):
         print(f"\n[SUCCESS] Connected to YouTube Channel: {res['channel_title']} ({res.get('handle')})!")
         print(f"Channel ID: {res['channel_id']}")
