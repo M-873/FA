@@ -11,6 +11,8 @@ def test_cartoon_workflow_dry_run():
     env.DRY_RUN = True
 
     pipeline = DailyCartoonAutomationPipeline()
+    pipeline.project_cfg.facebook_enabled = True
+    pipeline.project_cfg.youtube_enabled = True
     res = pipeline.run_daily_pipeline()
 
     assert "success" in res
@@ -35,6 +37,8 @@ def test_dry_run_does_not_block_same_day_real_run(tmp_path):
     dummy_video.write_bytes(b"DUMMY_MP4_CONTENT")
 
     pipeline = DailyCartoonAutomationPipeline()
+    pipeline.project_cfg.facebook_enabled = True
+    pipeline.project_cfg.youtube_enabled = True
 
     # Step 1: Simulate completed dry run
     env.DRY_RUN = True
@@ -86,6 +90,8 @@ def test_partial_recovery_resumes_upload_without_rerender(tmp_path):
     dummy_video.write_bytes(b"DUMMY_MP4_CONTENT")
 
     pipeline = DailyCartoonAutomationPipeline()
+    pipeline.project_cfg.facebook_enabled = True
+    pipeline.project_cfg.youtube_enabled = True
 
     # Create job in PARTIALLY_PUBLISHED state (e.g. Facebook succeeded, YouTube pending)
     job = DailyJobState(

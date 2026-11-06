@@ -174,8 +174,15 @@ def test_mock_job_creation(tmp_path):
 # -----------------------------------------------------------------------------
 # 4. GUI Dashboard Integration Tests (Tkinter)
 # -----------------------------------------------------------------------------
+def _create_tk_root():
+    try:
+        return tk.Tk()
+    except (tk.TclError, Exception) as e:
+        pytest.skip(f"Tkinter / Tcl not available: {e}")
+
+
 def test_dashboard_ui_initialization_and_widgets():
-    root = tk.Tk()
+    root = _create_tk_root()
     app = AutoPostDashboardApp(root)
     root.update()
 
@@ -214,7 +221,7 @@ def test_dashboard_ui_initialization_and_widgets():
 
 
 def test_dashboard_independent_toggles_in_gui():
-    root = tk.Tk()
+    root = _create_tk_root()
     app = AutoPostDashboardApp(root)
     root.update()
 
@@ -241,7 +248,7 @@ def test_dashboard_independent_toggles_in_gui():
 
 
 def test_dashboard_url_validation_and_mock_job_in_gui():
-    root = tk.Tk()
+    root = _create_tk_root()
     app = AutoPostDashboardApp(root)
     root.update()
 

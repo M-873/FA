@@ -22,6 +22,9 @@ class ProjectConfig:
         self.default_hashtags: List[str] = ["#AICartoon", "#TechShorts", "#Reels", "#Shorts"]
         self.youtube_category_id: str = "24"
         self.content_source: str = "auto"
+        self.youtube_enabled: bool = True
+        self.facebook_enabled: bool = False
+        self.instagram_enabled: bool = False
         self.auto_run_on_start: bool = True
         self.start_with_windows: bool = False
         self.load()
@@ -51,6 +54,9 @@ class ProjectConfig:
             "default_hashtags": self.default_hashtags,
             "youtube_category_id": self.youtube_category_id,
             "content_source": self.content_source,
+            "youtube_enabled": self.youtube_enabled,
+            "facebook_enabled": self.facebook_enabled,
+            "instagram_enabled": self.instagram_enabled,
             "auto_run_on_start": self.auto_run_on_start,
             "start_with_windows": self.start_with_windows,
         }
@@ -106,6 +112,11 @@ class EnvironmentSettings(BaseSettings):
         default=None,
         description="Manual override for content source: auto, stock_edit, stock_plus_generate, cartoon"
     )
+
+    # Platform Publishing Overrides
+    YOUTUBE_ENABLED: Optional[bool] = Field(default=None, description="Optional override for YouTube Shorts publishing")
+    FACEBOOK_ENABLED: Optional[bool] = Field(default=None, description="Optional override for Facebook Reels publishing")
+    INSTAGRAM_ENABLED: Optional[bool] = Field(default=None, description="Optional override for Instagram publishing")
 
     # Automation Flags
     AUTO_RUN_ON_START: bool = Field(default=True, description="Automatically start job on app launch")

@@ -41,6 +41,10 @@ class DailyJobState(BaseModel):
     youtube_status: str = Field(default="PENDING", description="Status: PENDING, SUCCESS, FAILED, SKIPPED")
     youtube_video_id: Optional[str] = Field(default=None, description="Returned YouTube Video ID")
 
+    # Instagram Status
+    instagram_status: str = Field(default="SKIPPED", description="Status: PENDING, SUCCESS, FAILED, SKIPPED")
+    instagram_media_id: Optional[str] = Field(default=None, description="Returned Instagram Media ID")
+
     # Metadata & Diagnostics
     error_message: Optional[str] = Field(default=None, description="Detailed failure diagnostic message")
     created_at: str = Field(default_factory=lambda: datetime.now().isoformat())

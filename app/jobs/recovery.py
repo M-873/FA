@@ -146,8 +146,18 @@ class DailyCartoonAutomationPipeline:
             hashtags = self.project_cfg.default_hashtags
         full_caption = f"{description}\n\n{' '.join(hashtags)}"
 
+        # Resolve platform switches (env override takes precedence over project_config.json)
+        fb_enabled = self.env_cfg.FACEBOOK_ENABLED if self.env_cfg.FACEBOOK_ENABLED is not None else getattr(self.project_cfg, "facebook_enabled", False)
+        yt_enabled = self.env_cfg.YOUTUBE_ENABLED if self.env_cfg.YOUTUBE_ENABLED is not None else getattr(self.project_cfg, "youtube_enabled", True)
+        ig_enabled = self.env_cfg.INSTAGRAM_ENABLED if self.env_cfg.INSTAGRAM_ENABLED is not None else getattr(self.project_cfg, "instagram_enabled", False)
+
         # 7a. Facebook Reel & Story Upload
-        if job.facebook_reel != "SUCCESS":
+        if not fb_enabled:
+            logger.info("Facebook publishing is disabled in configuration. Skipping Facebook.")
+            job.facebook_reel = "SKIPPED"
+            job.facebook_story = "SKIPPED"
+            self.job_mgr.save_job(job)
+        elif job.facebook_reel != "SUCCESS":
             job.update_status(JobStatus.UPLOADING_FACEBOOK)
             self.job_mgr.save_job(job)
 
@@ -170,7 +180,11 @@ class DailyCartoonAutomationPipeline:
             self.job_mgr.save_job(job)
 
         # 7b. YouTube Shorts Upload (SAME MASTER MP4 FILE)
-        if job.youtube_status != "SUCCESS":
+        if not yt_enabled:
+            logger.info("YouTube publishing is disabled in configuration. Skipping YouTube.")
+            job.youtube_status = "SKIPPED"
+            self.job_mgr.save_job(job)
+        elif job.youtube_status != "SUCCESS":
             job.update_status(JobStatus.UPLOADING_YOUTUBE)
             self.job_mgr.save_job(job)
 
@@ -190,16 +204,48 @@ class DailyCartoonAutomationPipeline:
 
             self.job_mgr.save_job(job)
 
-        # 8. Final State Assessment
-        fb_ok = job.facebook_reel in ("SUCCESS", "SKIPPED")
-        yt_ok = job.youtube_status == "SUCCESS"
+        # 7c. Instagram Publishing (Skipped if disabled or stubbed)
+        if not ig_enabled:
+            job.instagram_status = "SKIPPED"
+        else:
+            logger.info("Instagram publishing is enabled in config, but publisher is not yet configured. Marking SKIPPED.")
+            job.instagram_status = "SKIPPED"
+        self.job_mgr.save_job(job)
 
-        if fb_ok and yt_ok:
+        # 8. Final State Assessment
+        enabled_platforms = []
+        if yt_enabled:
+            enabled_platforms.append("youtube")
+        if fb_enabled:
+            enabled_platforms.append("facebook")
+        if ig_enabled:
+            enabled_platforms.append("instagram")
+
+        yt_success = (job.youtube_status == "SUCCESS")
+        fb_success = (job.facebook_reel == "SUCCESS")
+        ig_success = (job.instagram_status == "SUCCESS")
+
+        if not enabled_platforms:
+            all_enabled_ok = True
+            any_success = True
+        else:
+            all_enabled_ok = (
+                (not yt_enabled or yt_success) and
+                (not fb_enabled or fb_success) and
+                (not ig_enabled or ig_success or job.instagram_status == "SKIPPED")
+            )
+            any_success = (
+                (yt_enabled and yt_success) or
+                (fb_enabled and fb_success) or
+                (ig_enabled and ig_success)
+            )
+
+        if all_enabled_ok:
             if self.env_cfg.DRY_RUN:
                 job.update_status(JobStatus.DRY_RUN_COMPLETE)
             else:
                 job.update_status(JobStatus.PUBLISHED)
-        elif yt_ok or job.facebook_reel == "SUCCESS":
+        elif any_success:
             job.update_status(JobStatus.PARTIALLY_PUBLISHED)
         else:
             job.update_status(JobStatus.FAILED, error="Platform upload failed")

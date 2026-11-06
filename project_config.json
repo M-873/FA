@@ -23,6 +23,9 @@
   ],
   "youtube_category_id": "24",
   "content_source": "auto",
+  "youtube_enabled": true,
+  "facebook_enabled": false,
+  "instagram_enabled": false,
   "auto_run_on_start": true,
   "start_with_windows": false
 }
