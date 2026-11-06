@@ -41,6 +41,8 @@ class BaseContentSource(ABC):
         render_settings: RenderSettings,
         temp_mgr: TempFileManager,
         output_mp4_path: str = "output/final.mp4",
+        music_source_url: str = "UNVERIFIED",
+        **kwargs: Any,
     ) -> ContentRenderResult:
         """
         Generates the master video file for today's job.

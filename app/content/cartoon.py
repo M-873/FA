@@ -31,6 +31,8 @@ class CartoonContentSource(BaseContentSource):
         render_settings: RenderSettings,
         temp_mgr: TempFileManager,
         output_mp4_path: str = "output/final.mp4",
+        music_source_url: str = "UNVERIFIED",
+        **kwargs: Any,
     ) -> ContentRenderResult:
         # 1. 2D Frame Animation
         anim_engine = CartoonAnimationEngine(render_settings)

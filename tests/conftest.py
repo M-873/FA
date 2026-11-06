@@ -29,6 +29,20 @@ def isolate_license_log_file(tmp_path, monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def isolate_music_history_file(tmp_path, monkeypatch):
+    """
+    Ensures tests never touch or pollute output/music_history.json.
+    Points MusicManager default history path to an isolated temp file.
+    """
+    from app.video.music import MusicManager
+    temp_hist = str(tmp_path / "temp_music_history.json")
+    orig_init = MusicManager.__init__
+    def _mock_init(self, music_dir="assets/music", history_file=temp_hist, licenses_file=None):
+        orig_init(self, music_dir=music_dir, history_file=history_file, licenses_file=licenses_file)
+    monkeypatch.setattr(MusicManager, "__init__", _mock_init)
+
+
+@pytest.fixture(autouse=True)
 def block_network_calls(monkeypatch):
     """
     Global fixture blocking real HTTP network calls during test execution.

@@ -89,6 +89,7 @@ class DailyCartoonAutomationPipeline:
 
             music_mgr = MusicManager()
             music_track = music_mgr.select_track()
+            music_source_url = music_mgr.get_track_source_url(music_track)
 
             final_mp4_path = "output/final.mp4"
             from app.stock.provider import NoClipFoundError
@@ -102,6 +103,7 @@ class DailyCartoonAutomationPipeline:
                     render_settings=render_settings,
                     temp_mgr=temp_mgr,
                     output_mp4_path=final_mp4_path,
+                    music_source_url=music_source_url,
                 )
                 final_mp4_path = render_res.video_path
             except NoClipFoundError as e:
