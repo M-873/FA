@@ -42,11 +42,12 @@ class CloudTTSProvider(BaseTTSProvider):
                 f.write(b"MOCK_TTS_AUDIO_CONTENT")
             return output_path
         try:
+            audio_codec = "libmp3lame" if output_path.lower().endswith(".mp3") else "aac"
             cmd = [
                 ffmpeg_bin, "-y",
                 "-f", "lavfi",
                 "-i", f"sine=frequency=440:duration={duration}",
-                "-c:a", "aac",
+                "-c:a", audio_codec,
                 output_path,
             ]
             subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
