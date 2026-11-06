@@ -1,7 +1,7 @@
 import os
 from typing import Dict, Any, Optional
 from app.ai.gemini import GeminiCartoonAIProvider
-from app.animation.engine import CartoonAnimationEngine
+from app.content.factory import ContentSourceFactory
 from app.facebook.reels import FacebookReelPublisher
 from app.facebook.stories import FacebookStoryPublisher
 from app.hardware.detector import HardwareDetector
@@ -15,13 +15,12 @@ from app.utils.config import get_project_config, get_env_settings
 from app.utils.logging import logger
 from app.video.music import MusicManager
 from app.video.quality import VideoQualityChecker
-from app.video.renderer import CartoonMasterRenderer
 from app.youtube.publisher import YouTubeShortsPublisher
 
 
 class DailyCartoonAutomationPipeline:
     """
-    End-to-End Orchestrator for 2D Cartoon Daily Video Automation.
+    End-to-End Orchestrator for Daily Video Automation.
     Guarantees SINGLE render of output/final.mp4 and SAME-FILE upload to Facebook and YouTube.
     Supports partial failure recovery (e.g. retrying failed YouTube upload without re-rendering).
     """
@@ -34,7 +33,7 @@ class DailyCartoonAutomationPipeline:
     def run_daily_pipeline(self) -> Dict[str, Any]:
         """Executes today's automated video pipeline."""
         logger.info("==============================================================================")
-        logger.info("STARTING LIGHTWEIGHT 2D CARTOON DAILY AUTOMATION PIPELINE")
+        logger.info("STARTING LIGHTWEIGHT DAILY AUTOMATION PIPELINE")
         logger.info("==============================================================================")
 
         # 1. Hardware Specs & Profile Selection
@@ -52,9 +51,9 @@ class DailyCartoonAutomationPipeline:
         # Check Partial Failure Recovery
         if job.status == JobStatus.PARTIALLY_PUBLISHED and job.video_path and os.path.exists(job.video_path):
             logger.info("Detected PARTIALLY_PUBLISHED state. Resuming upload stage for failed platform without re-rendering...")
-            return self._resume_uploads(job, job.video_path, metadata={"title": job.topic_title or "Cartoon Short"})
+            return self._resume_uploads(job, job.video_path, metadata={"title": job.topic_title or "Video Short"})
 
-        with TempFileManager(prefix="cartoon_render_") as temp_mgr:
+        with TempFileManager(prefix="daily_render_") as temp_mgr:
             # 3. AI Generation Stage
             job.update_status(JobStatus.GENERATING_TOPIC)
             self.job_mgr.save_job(job)
@@ -80,31 +79,31 @@ class DailyCartoonAutomationPipeline:
 
             HardwareSafetyMonitor.purge_resources()
 
-            # 5. 2D Frame Animation Stage
-            job.update_status(JobStatus.ANIMATING)
-            self.job_mgr.save_job(job)
-            anim_engine = CartoonAnimationEngine(render_settings)
-            frames_dir = temp_mgr.get_path("frames")
-            anim_engine.render_scene_frames(script, scene_plan, frames_dir)
+            # 5. Content Generation & Master Render Stage
+            configured_source = getattr(self.project_cfg, "content_source", "auto")
+            content_source = ContentSourceFactory.get_source(specs, configured_source)
+            job.content_source = content_source.name
 
-            HardwareSafetyMonitor.purge_resources()
-
-            # 6. Master FFmpeg Render Stage (SINGLE MASTER MP4)
-            job.update_status(JobStatus.RENDERING)
+            job.update_status(JobStatus.ANIMATING if content_source.name == "cartoon" else JobStatus.RENDERING)
             self.job_mgr.save_job(job)
+
             music_mgr = MusicManager()
             music_track = music_mgr.select_track()
 
-            master_renderer = CartoonMasterRenderer(render_settings)
             final_mp4_path = "output/final.mp4"
-            master_renderer.render_master_mp4(
-                frame_dir=frames_dir,
+            render_res = content_source.generate_video(
+                topic=topic,
+                script=script,
+                scene_plan=scene_plan,
                 tts_audio_path=tts_path,
                 music_path=music_track,
+                render_settings=render_settings,
+                temp_mgr=temp_mgr,
                 output_mp4_path=final_mp4_path,
             )
+            final_mp4_path = render_res.video_path
 
-            # 7. Quality Verification
+            # 6. Quality Verification
             job.update_status(JobStatus.QUALITY_CHECK)
             self.job_mgr.save_job(job)
             quality_res = VideoQualityChecker.verify_video(final_mp4_path)
@@ -119,26 +118,26 @@ class DailyCartoonAutomationPipeline:
             job.update_status(JobStatus.READY_TO_UPLOAD)
             self.job_mgr.save_job(job)
 
-            # 8. Multi-Platform Upload Stage (SAME MASTER FINAL MP4)
+            # 7. Multi-Platform Upload Stage (SAME MASTER FINAL MP4)
             return self._resume_uploads(job, final_mp4_path, metadata)
 
     def _resume_uploads(self, job: DailyJobState, master_mp4_path: str, metadata: Dict[str, Any] = None) -> Dict[str, Any]:
         """Uploads the SAME master MP4 file to Facebook and YouTube with status state tracking."""
         if isinstance(metadata, dict):
-            title = metadata.get("title", job.topic_title or "AI Cartoon Short")
-            description = metadata.get("description", "Daily 2D Cartoon AI Short")
+            title = metadata.get("title", job.topic_title or "AI Video Short")
+            description = metadata.get("description", "Daily AI Video Short")
             hashtags = metadata.get("hashtags", self.project_cfg.default_hashtags)
         elif isinstance(metadata, str):
             title = metadata
-            description = "Daily 2D Cartoon AI Short"
+            description = "Daily AI Video Short"
             hashtags = self.project_cfg.default_hashtags
         else:
-            title = job.topic_title or "AI Cartoon Short"
-            description = "Daily 2D Cartoon AI Short"
+            title = job.topic_title or "AI Video Short"
+            description = "Daily AI Video Short"
             hashtags = self.project_cfg.default_hashtags
         full_caption = f"{description}\n\n{' '.join(hashtags)}"
 
-        # 8a. Facebook Reel & Story Upload
+        # 7a. Facebook Reel & Story Upload
         if job.facebook_reel != "SUCCESS":
             job.update_status(JobStatus.UPLOADING_FACEBOOK)
             self.job_mgr.save_job(job)
@@ -161,7 +160,7 @@ class DailyCartoonAutomationPipeline:
 
             self.job_mgr.save_job(job)
 
-        # 8b. YouTube Shorts Upload (SAME MASTER MP4 FILE)
+        # 7b. YouTube Shorts Upload (SAME MASTER MP4 FILE)
         if job.youtube_status != "SUCCESS":
             job.update_status(JobStatus.UPLOADING_YOUTUBE)
             self.job_mgr.save_job(job)
@@ -182,7 +181,7 @@ class DailyCartoonAutomationPipeline:
 
             self.job_mgr.save_job(job)
 
-        # 9. Final State Assessment
+        # 8. Final State Assessment
         fb_ok = job.facebook_reel in ("SUCCESS", "SKIPPED")
         yt_ok = job.youtube_status == "SUCCESS"
 
@@ -198,7 +197,7 @@ class DailyCartoonAutomationPipeline:
 
         self.job_mgr.save_job(job)
 
-        # 10. Clean up master output file if configured
+        # 9. Clean up master output file if configured
         if job.status == JobStatus.PUBLISHED and os.path.exists(master_mp4_path):
             try:
                 os.remove(master_mp4_path)

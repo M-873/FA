@@ -30,6 +30,7 @@ class DailyJobState(BaseModel):
     status: JobStatus = Field(default=JobStatus.PENDING, description="Overall current job status")
     video_path: Optional[str] = Field(default=None, description="Path to rendered master final.mp4")
     topic_title: Optional[str] = Field(default=None, description="Selected daily topic headline")
+    content_source: str = Field(default="cartoon", description="Content source used: cartoon, stock_edit, etc.")
 
     # Facebook Status
     facebook_reel: str = Field(default="PENDING", description="Status: PENDING, SUCCESS, FAILED, SKIPPED")

@@ -21,6 +21,7 @@ class ProjectConfig:
         self.music_style: str = "upbeat_lofi_playful"
         self.default_hashtags: List[str] = ["#AICartoon", "#TechShorts", "#Reels", "#Shorts"]
         self.youtube_category_id: str = "24"
+        self.content_source: str = "auto"
         self.auto_run_on_start: bool = True
         self.start_with_windows: bool = False
         self.load()
@@ -49,6 +50,7 @@ class ProjectConfig:
             "music_style": self.music_style,
             "default_hashtags": self.default_hashtags,
             "youtube_category_id": self.youtube_category_id,
+            "content_source": self.content_source,
             "auto_run_on_start": self.auto_run_on_start,
             "start_with_windows": self.start_with_windows,
         }
@@ -69,8 +71,6 @@ class EnvironmentSettings(BaseSettings):
     # Primary AI: Gemini
     GEMINI_API_KEY: str = Field(default="", description="Google Gemini API Key")
     GEMINI_MODEL: str = Field(default="gemini-1.5-flash", description="Gemini Text Model")
-
-
 
     # Optional AI: OpenAI
     OPENAI_ENABLED: bool = Field(default=False, description="Enable OpenAI fallback")
@@ -97,6 +97,16 @@ class EnvironmentSettings(BaseSettings):
     YOUTUBE_CLIENT_SECRET: str = Field(default="", description="YouTube OAuth Client Secret")
     YOUTUBE_CHANNEL_ID: str = Field(default="", description="YouTube Channel ID")
 
+    # Stock Video APIs
+    PEXELS_API_KEY: str = Field(default="", description="Pexels Video API Key")
+    PIXABAY_API_KEY: str = Field(default="", description="Pixabay Video API Key")
+
+    # Content Source Override
+    CONTENT_SOURCE_OVERRIDE: Optional[str] = Field(
+        default=None,
+        description="Manual override for content source: auto, stock_edit, stock_plus_generate, cartoon"
+    )
+
     # Automation Flags
     AUTO_RUN_ON_START: bool = Field(default=True, description="Automatically start job on app launch")
     RUN_LATEST: bool = Field(default=True, description="Run only current video if days were missed")
@@ -115,6 +125,8 @@ class EnvironmentSettings(BaseSettings):
             "TTS_API_KEY",
             "META_ACCESS_TOKEN",
             "YOUTUBE_CLIENT_SECRET",
+            "PEXELS_API_KEY",
+            "PIXABAY_API_KEY",
         ]
         for key in secrets:
             if key in d and d[key]:
