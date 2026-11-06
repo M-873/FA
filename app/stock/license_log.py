@@ -108,3 +108,4 @@ class StockLicenseManager:
             logger.error(f"Failed to write stock license log: {e}")
 
         return record
+

@@ -94,3 +94,48 @@ def is_ffprobe_available() -> bool:
         return res.returncode == 0
     except Exception:
         return False
+
+
+def get_bengali_font_path() -> Optional[str]:
+    """
+    Locates a Bengali-capable TrueType/OpenType font on the host system.
+    Searches assets/fonts/, Windows Fonts (Nirmala UI, Vrinda), and Linux font paths.
+    Returns the absolute path to the font file, or None if none found.
+    """
+    # 1. Project assets directory
+    for candidate_dir in ("assets/fonts", "assets"):
+        if os.path.exists(candidate_dir):
+            for fname in ("NirmalaB.ttf", "Nirmala.ttf", "Kalpurush.ttf", "SiyamRupali.ttf", "SolaimanLipi.ttf"):
+                p = os.path.join(candidate_dir, fname)
+                if os.path.exists(p):
+                    return os.path.abspath(p)
+
+    # 2. Windows System Fonts
+    windir = os.environ.get("WINDIR", r"C:\Windows")
+    win_fonts = os.path.join(windir, "Fonts")
+    if os.path.exists(win_fonts):
+        for fname in ("NirmalaB.ttf", "Nirmala.ttf", "NirmalaS.ttf", "vrinda.ttf", "vrindab.ttf", "arial.ttf"):
+            p = os.path.join(win_fonts, fname)
+            if os.path.exists(p):
+                return p.replace("\\", "/")
+
+    # 3. Linux/Unix Font Paths
+    linux_candidates = [
+        "/usr/share/fonts/truetype/noto/NotoSansBengali-Bold.ttf",
+        "/usr/share/fonts/truetype/noto/NotoSansBengali-Regular.ttf",
+        "/usr/share/fonts/truetype/lohit-bengali/Lohit-Bengali.ttf",
+        "/usr/share/fonts/opentype/noto/NotoSansBengali-Bold.otf",
+    ]
+    for p in linux_candidates:
+        if os.path.exists(p):
+            return p
+
+    return None
+
+
+def format_font_path_for_ffmpeg(font_path: Optional[str]) -> str:
+    """Formats and escapes font path so FFmpeg drawtext filter doesn't choke on Windows colons."""
+    if not font_path:
+        return ""
+    normalized = font_path.replace("\\", "/")
+    return normalized.replace(":", r"\:")

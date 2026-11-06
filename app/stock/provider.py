@@ -383,3 +383,4 @@ class StockVideoProvider:
                 logger.info(f"Cleaned up cached stock clip: {local_path}")
             except Exception as e:
                 logger.warning(f"Failed to clean up cached clip {local_path}: {e}")
+

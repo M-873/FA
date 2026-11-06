@@ -15,6 +15,20 @@ def isolate_daily_job_file(tmp_path, monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def isolate_license_log_file(tmp_path, monkeypatch):
+    """
+    Ensures tests never pollute or overwrite the real output/stock_license_log.json.
+    Points StockLicenseManager default path to an isolated temp file.
+    """
+    from app.stock.license_log import StockLicenseManager
+    temp_log = str(tmp_path / "temp_stock_license_log.json")
+    def _mock_init(self, log_path=temp_log):
+        self.log_path = log_path
+        self._used_ids_cache = None
+    monkeypatch.setattr(StockLicenseManager, "__init__", _mock_init)
+
+
+@pytest.fixture(autouse=True)
 def block_network_calls(monkeypatch):
     """
     Global fixture blocking real HTTP network calls during test execution.
@@ -44,4 +58,3 @@ def block_network_calls(monkeypatch):
         monkeypatch.setattr(urllib.request, "urlopen", raise_network_error)
     except (ImportError, AttributeError):
         pass
-

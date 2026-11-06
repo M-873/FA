@@ -91,17 +91,24 @@ class DailyCartoonAutomationPipeline:
             music_track = music_mgr.select_track()
 
             final_mp4_path = "output/final.mp4"
-            render_res = content_source.generate_video(
-                topic=topic,
-                script=script,
-                scene_plan=scene_plan,
-                tts_audio_path=tts_path,
-                music_path=music_track,
-                render_settings=render_settings,
-                temp_mgr=temp_mgr,
-                output_mp4_path=final_mp4_path,
-            )
-            final_mp4_path = render_res.video_path
+            from app.stock.provider import NoClipFoundError
+            try:
+                render_res = content_source.generate_video(
+                    topic=topic,
+                    script=script,
+                    scene_plan=scene_plan,
+                    tts_audio_path=tts_path,
+                    music_path=music_track,
+                    render_settings=render_settings,
+                    temp_mgr=temp_mgr,
+                    output_mp4_path=final_mp4_path,
+                )
+                final_mp4_path = render_res.video_path
+            except NoClipFoundError as e:
+                logger.error(f"No stock clip found: {e}. Ending job in FAILED state.")
+                job.update_status(JobStatus.FAILED, error=str(e))
+                self.job_mgr.save_job(job)
+                return {"success": False, "reason": str(e)}
 
             # 6. Quality Verification
             job.update_status(JobStatus.QUALITY_CHECK)

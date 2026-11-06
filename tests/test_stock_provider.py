@@ -237,3 +237,4 @@ def test_provider_cleanup_only_removes_cache(temp_dirs):
     provider.cleanup_clip(local_file)
     # Must still exist!
     assert os.path.exists(local_file)
+

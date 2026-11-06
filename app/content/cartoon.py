@@ -52,3 +52,4 @@ class CartoonContentSource(BaseContentSource):
             video_path=final_mp4,
             content_source=self.name,
         )
+

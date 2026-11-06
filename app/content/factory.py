@@ -7,14 +7,15 @@ Rules:
 - Manual choice wins (CONTENT_SOURCE_OVERRIDE env var or non-'auto' project_config.json)
 - Auto:
     - LEGACY_2GB / LOW -> stock_edit
-    - MEDIUM / HIGH / ULTRA -> stock_plus_generate
-- Until stock sources exist, stock_edit and stock_plus_generate fall back to 'cartoon'
-  with an explicit warning log.
+    - MEDIUM / HIGH / ULTRA -> stock_plus_generate (generate part stubbed, falls back to stock_edit)
+- Cartoon only on manual choice.
 """
 
 from typing import Optional
 from app.content.base import BaseContentSource
 from app.content.cartoon import CartoonContentSource
+from app.content.stock_edit import StockEditContentSource
+from app.content.stock_plus_generate import StockPlusGenerateContentSource
 from app.hardware.detector import HardwareSpecs
 from app.hardware.profiles import HardwareProfileManager
 from app.utils.config import get_env_settings, get_project_config
@@ -72,20 +73,17 @@ class ContentSourceFactory:
     ) -> BaseContentSource:
         """
         Returns a concrete BaseContentSource implementation.
-        Falls back to CartoonContentSource with a warning if the requested source
-        is not yet implemented.
         """
         source_name = cls.resolve_source_name(specs, configured_source)
+
+        if source_name == "stock_edit":
+            return StockEditContentSource()
+
+        if source_name == "stock_plus_generate":
+            return StockPlusGenerateContentSource()
 
         if source_name == "cartoon":
             return CartoonContentSource()
 
-        if source_name in ("stock_edit", "stock_plus_generate"):
-            logger.warning(
-                f"Content source '{source_name}' is not implemented yet. "
-                f"Falling back to 'cartoon' content source with procedural animation."
-            )
-            return CartoonContentSource()
-
-        logger.warning(f"Unknown content source '{source_name}'. Defaulting to 'cartoon'.")
-        return CartoonContentSource()
+        logger.warning(f"Unknown content source '{source_name}'. Defaulting to 'stock_edit'.")
+        return StockEditContentSource()

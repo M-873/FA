@@ -10,6 +10,8 @@ import pytest
 
 from app.content.base import BaseContentSource, ContentRenderResult
 from app.content.cartoon import CartoonContentSource
+from app.content.stock_edit import StockEditContentSource
+from app.content.stock_plus_generate import StockPlusGenerateContentSource
 from app.content.factory import ContentSourceFactory
 from app.hardware.detector import HardwareSpecs
 from app.jobs.state import DailyJobState, JobStatus
@@ -75,12 +77,19 @@ def test_factory_auto_derivation_high_end():
     assert resolved == "stock_plus_generate"
 
 
-def test_factory_fallback_to_cartoon_for_unimplemented_sources(caplog):
-    """stock_edit and stock_plus_generate fall back to CartoonContentSource with warning log."""
-    source = ContentSourceFactory.get_source(configured_source="stock_edit")
-    assert isinstance(source, CartoonContentSource)
-    assert source.name == "cartoon"
-    assert any("not implemented yet" in record.message for record in caplog.records)
+def test_factory_instantiates_concrete_sources():
+    """Factory returns StockEditContentSource, StockPlusGenerateContentSource, or CartoonContentSource."""
+    s1 = ContentSourceFactory.get_source(configured_source="stock_edit")
+    assert isinstance(s1, StockEditContentSource)
+    assert s1.name == "stock_edit"
+
+    s2 = ContentSourceFactory.get_source(configured_source="stock_plus_generate")
+    assert isinstance(s2, StockPlusGenerateContentSource)
+    assert s2.name == "stock_plus_generate"
+
+    s3 = ContentSourceFactory.get_source(configured_source="cartoon")
+    assert isinstance(s3, CartoonContentSource)
+    assert s3.name == "cartoon"
 
 
 def test_cartoon_content_source_properties():

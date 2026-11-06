@@ -47,3 +47,4 @@ class BaseContentSource(ABC):
         Returns a ContentRenderResult.
         """
         pass
+
