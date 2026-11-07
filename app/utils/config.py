@@ -19,10 +19,15 @@ class ProjectConfig:
         self.voice_style: str = "expressive_bn"
         self.subtitle_style: str = "yellow_shadow_bold"
         self.music_style: str = "upbeat_lofi_playful"
+        self.facebook_page_url: str = "https://www.facebook.com/profile.php?id=61593188125705"
+        self.facebook_page_id: str = "61593188125705"
+        self.youtube_channel_url: str = "https://www.youtube.com/@Life-X-873"
+        self.youtube_channel_handle: str = "@Life-X-873"
+        self.youtube_channel_id: str = "UCEX2BPA56iFeANOrrGY_eYg"
         self.default_hashtags: List[str] = ["#AICartoon", "#TechShorts", "#Reels", "#Shorts"]
         self.youtube_category_id: str = "24"
         self.gemini_model: str = "gemini-2.0-flash"
-        self.content_source: str = "auto"
+        self.content_source: str = "stock_edit"
         self.youtube_privacy: str = "private"
         self.youtube_enabled: bool = True
         self.facebook_enabled: bool = False
@@ -34,6 +39,7 @@ class ProjectConfig:
         self.scheduled_time: str = "10:00"
         self.publisher_device: bool = True
         self.kill_switch: bool = False
+        self._extra: dict = {}
         self.load()
 
     def load(self):
@@ -44,6 +50,8 @@ class ProjectConfig:
                     for key, value in data.items():
                         if hasattr(self, key):
                             setattr(self, key, value)
+                        else:
+                            self._extra[key] = value
             except Exception as e:
                 print(f"[WARNING] Failed to load project_config.json: {e}")
 
@@ -58,6 +66,11 @@ class ProjectConfig:
             "voice_style": self.voice_style,
             "subtitle_style": self.subtitle_style,
             "music_style": self.music_style,
+            "facebook_page_url": self.facebook_page_url,
+            "facebook_page_id": self.facebook_page_id,
+            "youtube_channel_url": self.youtube_channel_url,
+            "youtube_channel_handle": self.youtube_channel_handle,
+            "youtube_channel_id": self.youtube_channel_id,
             "default_hashtags": self.default_hashtags,
             "youtube_category_id": self.youtube_category_id,
             "gemini_model": self.gemini_model,
@@ -74,6 +87,7 @@ class ProjectConfig:
             "publisher_device": self.publisher_device,
             "kill_switch": self.kill_switch,
         }
+        data.update(self._extra)
         with open(self.config_path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
 

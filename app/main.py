@@ -4,7 +4,9 @@ import sys
 from app.jobs.manager import DailyJobManager
 from app.jobs.recovery import DailyCartoonAutomationPipeline
 from app.jobs.state import JobStatus
-from app.ui.main_window import launch_gui
+from app.ui.modern_app import launch_modern_gui
+from app.ui.main_window import launch_gui as launch_legacy_gui
+from app.tray.app import SystemTrayApp
 from app.utils.config import get_project_config, get_env_settings
 from app.utils.logging import logger
 
@@ -16,9 +18,11 @@ def run_pipeline_job():
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Lightweight 2D Cartoon Daily Video Automation System")
+    parser = argparse.ArgumentParser(description="FA Daily Video Automation Studio")
     parser.add_argument("--cli", action="store_true", help="Run end-to-end automation in headless CLI mode")
-    parser.add_argument("--gui", action="store_true", help="Launch Windows Tkinter GUI mode")
+    parser.add_argument("--gui", action="store_true", help="Launch modern CustomTkinter Desktop Studio")
+    parser.add_argument("--tray", action="store_true", help="Launch system tray background monitor")
+    parser.add_argument("--legacy-gui", action="store_true", help="Launch Phase 1 desktop dashboard")
     parser.add_argument("--reset-job", action="store_true", help="Reset today's job state to PENDING")
     parser.add_argument("--dry-run", action="store_true", help="Enable dry run mode (do not upload)")
     parser.add_argument("--content-source", type=str, default=None, help="Override content source (e.g. stock_edit, cartoon)")
@@ -74,9 +78,16 @@ def main():
     if args.cli:
         logger.info("Executing pipeline in CLI mode...")
         run_pipeline_job()
+    elif args.tray:
+        logger.info("Launching System Tray Monitor...")
+        tray = SystemTrayApp()
+        tray.run()
+    elif args.legacy_gui:
+        logger.info("Launching Legacy Phase 1 Desktop Dashboard...")
+        launch_legacy_gui()
     else:
-        logger.info("Launching Phase 1 Desktop Dashboard...")
-        launch_gui()
+        logger.info("Launching FA Studio Modern Desktop UI...")
+        launch_modern_gui()
 
 
 if __name__ == "__main__":
