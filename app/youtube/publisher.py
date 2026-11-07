@@ -218,6 +218,8 @@ class YouTubePublisher:
             # Specific quota exhaustion detection
             if ex.resp.status == 403 and "quotaExceeded" in error_details:
                 logger.error("CRITICAL: YouTube Data API v3 daily quota (10,000 units) exhausted.")
+                from app.notifications import get_notifier
+                get_notifier().notify_youtube_quota_error("YouTube Data API daily quota limit reached.")
                 return {
                     "success": False,
                     "quota_exceeded": True,

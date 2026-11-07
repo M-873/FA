@@ -159,6 +159,15 @@ class DailyCartoonAutomationPipeline:
                 logger.error(f"No stock clip found: {e}. Ending job in FAILED state.")
                 job.update_status(JobStatus.FAILED, error=str(e))
                 self.job_mgr.save_job(job)
+                from app.notifications import get_notifier
+                get_notifier().notify_no_clip_found(str(e))
+                return {"success": False, "reason": str(e)}
+            except Exception as e:
+                logger.error(f"Render failed: {e}. Ending job in FAILED state.")
+                job.update_status(JobStatus.FAILED, error=str(e))
+                self.job_mgr.save_job(job)
+                from app.notifications import get_notifier
+                get_notifier().notify_ffmpeg_failure(str(e))
                 return {"success": False, "reason": str(e)}
 
             # 6. Quality Verification
@@ -184,6 +193,11 @@ class DailyCartoonAutomationPipeline:
                 job.update_status(JobStatus.AWAITING_APPROVAL)
                 self.job_mgr.save_job(job)
                 abs_video_path = os.path.abspath(final_mp4_path)
+                from app.notifications import get_notifier
+                get_notifier().notify_awaiting_approval(
+                    topic=job.topic_title or "AI Video Short",
+                    video_path=abs_video_path,
+                )
                 logger.info("=" * 78)
                 logger.info(f"JOB PAUSED FOR HUMAN APPROVAL: {job.job_id}")
                 logger.info(f"Rendered Video: {abs_video_path}")
@@ -334,6 +348,11 @@ class DailyCartoonAutomationPipeline:
                 job.update_status(JobStatus.DRY_RUN_COMPLETE)
             else:
                 job.update_status(JobStatus.PUBLISHED)
+                from app.notifications import get_notifier
+                get_notifier().notify_success(
+                    video_id=job.youtube_video_id or "N/A",
+                    platform="YouTube Shorts",
+                )
         elif any_success:
             job.update_status(JobStatus.PARTIALLY_PUBLISHED)
         else:

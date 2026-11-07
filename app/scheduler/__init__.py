@@ -1,10 +1,9 @@
 """
-Daily and Weekly Workflow Scheduler package.
+app/scheduler package
+=====================
+Automated Daily Video Scheduler.
 """
-from app.scheduler.daily import DailyWorkflow
-from app.scheduler.weekly import WeeklyWorkflow
 
-__all__ = [
-    "DailyWorkflow",
-    "WeeklyWorkflow",
-]
+from app.scheduler.service import DailyScheduler
+
+__all__ = ["DailyScheduler"]

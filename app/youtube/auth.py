@@ -107,10 +107,21 @@ class YouTubeAuthManager:
             # Refresh if expired
             if creds.expired and creds.refresh_token:
                 logger.info("YouTube OAuth token is expired. Refreshing token with Google...")
-                creds.refresh(Request())
-                updated_data = json.loads(creds.to_json())
-                self._save_raw_credentials(updated_data)
-                logger.info("YouTube OAuth token refreshed and saved to Windows Credential Manager.")
+                try:
+                    creds.refresh(Request())
+                    updated_data = json.loads(creds.to_json())
+                    self._save_raw_credentials(updated_data)
+                    logger.info("YouTube OAuth token refreshed and saved to Windows Credential Manager.")
+                except Exception as refresh_err:
+                    logger.error(f"Failed to refresh YouTube OAuth token: {refresh_err}. Re-login required.")
+                    from app.notifications import get_notifier
+                    get_notifier().notify_youtube_token_expired("Re-login required")
+                    return None
+            elif creds.expired:
+                logger.warning("YouTube OAuth token is expired with no refresh token. Re-login required.")
+                from app.notifications import get_notifier
+                get_notifier().notify_youtube_token_expired("Re-login required")
+                return None
 
             return build("youtube", "v3", credentials=creds)
         except Exception as e:
