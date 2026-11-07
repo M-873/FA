@@ -6,6 +6,7 @@ Tests for:
 - Hard cap of 1 publish per day (enforced via state & SQLite publishing history)
 """
 
+from datetime import datetime
 from unittest.mock import MagicMock, patch
 import pytest
 
@@ -46,11 +47,12 @@ def test_kill_switch_blocks_approval():
 
 
 def test_hard_cap_blocks_pipeline_when_published_in_history(tmp_path):
+    today = datetime.now().strftime("%Y-%m-%d")
     job_mgr = DailyJobManager()
     history_mgr = PublishingHistoryManager()
 
     history_mgr.record_publication(
-        date="2026-11-06",
+        date=today,
         topic="Prior Video Today",
         clip_id="clip_1",
         provider="local",
@@ -69,13 +71,14 @@ def test_hard_cap_blocks_pipeline_when_published_in_history(tmp_path):
 
 
 def test_hard_cap_blocks_approval_when_published_in_history(tmp_path):
+    today = datetime.now().strftime("%Y-%m-%d")
     job_mgr = DailyJobManager()
     dummy_mp4 = tmp_path / "final.mp4"
     dummy_mp4.write_bytes(b"DATA")
 
     job = DailyJobState(
-        date="2026-11-06",
-        job_id="2026-11-06-test",
+        date=today,
+        job_id=f"{today}-test",
         status=JobStatus.AWAITING_APPROVAL,
         video_path=str(dummy_mp4),
         topic_title="Awaiting Video",
@@ -84,7 +87,7 @@ def test_hard_cap_blocks_approval_when_published_in_history(tmp_path):
 
     history_mgr = PublishingHistoryManager()
     history_mgr.record_publication(
-        date="2026-11-06",
+        date=today,
         topic="Prior Video Today",
         clip_id="clip_1",
         provider="local",
@@ -100,3 +103,4 @@ def test_hard_cap_blocks_approval_when_published_in_history(tmp_path):
     res = pipeline.approve_job()
     assert res["success"] is False
     assert "hard cap" in res["reason"].lower()
+

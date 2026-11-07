@@ -7,6 +7,7 @@ Tests for publisher_device authorization setting:
 - YouTubeShortsPublisher enforces publisher_device check
 """
 
+from datetime import datetime
 from unittest.mock import MagicMock, patch
 import pytest
 
@@ -17,6 +18,7 @@ from app.youtube.publisher import YouTubeShortsPublisher
 
 def test_publisher_device_false_forces_dry_run_in_pipeline(tmp_path):
     """If publisher_device is False, pipeline must end in DRY_RUN_COMPLETE even if DRY_RUN is False."""
+    today = datetime.now().strftime("%Y-%m-%d")
     pipeline = DailyCartoonAutomationPipeline()
     pipeline.env_cfg.DRY_RUN = False
     pipeline.project_cfg.dry_run = False
@@ -27,8 +29,8 @@ def test_publisher_device_false_forces_dry_run_in_pipeline(tmp_path):
     pipeline.project_cfg.instagram_enabled = False
 
     job = DailyJobState(
-        date="2026-11-06",
-        job_id="2026-11-06-test",
+        date=today,
+        job_id=f"{today}-test",
         status=JobStatus.READY_TO_UPLOAD,
         video_path=str(tmp_path / "final.mp4"),
     )
@@ -57,9 +59,10 @@ def test_publisher_device_env_override_takes_precedence(tmp_path):
     pipeline.project_cfg.facebook_enabled = False
     pipeline.project_cfg.instagram_enabled = False
 
+    today = datetime.now().strftime("%Y-%m-%d")
     job = DailyJobState(
-        date="2026-11-06",
-        job_id="2026-11-06-test",
+        date=today,
+        job_id=f"{today}-test",
         status=JobStatus.READY_TO_UPLOAD,
         video_path=str(tmp_path / "final.mp4"),
     )
@@ -106,9 +109,10 @@ def test_publisher_device_true_allows_publication(tmp_path):
     pipeline.project_cfg.facebook_enabled = False
     pipeline.project_cfg.instagram_enabled = False
 
+    today = datetime.now().strftime("%Y-%m-%d")
     job = DailyJobState(
-        date="2026-11-06",
-        job_id="2026-11-06-test",
+        date=today,
+        job_id=f"{today}-test",
         status=JobStatus.READY_TO_UPLOAD,
         video_path=str(tmp_path / "final.mp4"),
     )
@@ -124,3 +128,4 @@ def test_publisher_device_true_allows_publication(tmp_path):
         assert res["success"] is True
         assert res["job_status"] == JobStatus.PUBLISHED.value
         assert job.status == JobStatus.PUBLISHED
+
